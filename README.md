@@ -71,28 +71,23 @@ cp backend/.env.example backend/.env
 # edit TAMUS_AI_CHAT_API_KEY=...
 ```
 
-## Public knowledge base
+## Public knowledge base (clean benchmark default)
 
-Groundline ships with scripts for large public corpora:
-
-1. **Wikipedia extracts** (CC BY-SA) — `backend/corpus/wikipedia/`
-2. **Hugging Face `rag-datasets/rag-mini-wikipedia`** — 3,200 passages
-3. **Hugging Face streaming `wikimedia/wikipedia` `20231101.en`** — additional articles (keeps existing KB)
+**Default corpus for demos and reported quality numbers:**
+Hugging Face [`rag-datasets/rag-mini-wikipedia`](https://huggingface.co/datasets/rag-datasets/rag-mini-wikipedia)
+- 3,200 focused passages (clean RAG benchmark, not a noisy full-Wikipedia dump)
+- 918 official question–answer pairs used by `/api/eval/run`
+- Plus curated domain docs (RAG / FAISS / agentic / evaluation)
 
 ```bash
 cd backend
-# Curated Wikipedia articles
-python3 scripts/download_wikipedia_corpus.py
-PYTHONPATH=. python3 scripts/ingest_corpus.py --keep-existing
-
-# HF rag-mini shards (adds breadth; use --replace to wipe first)
-PYTHONPATH=. python3 scripts/ingest_hf_rag_mini.py
-
-# Stream a substantial Wikipedia batch (default 1000 articles; does not wipe)
-PYTHONPATH=. python3 scripts/ingest_wikipedia_hf.py --limit 1000
+PYTHONPATH=. python3 scripts/rebuild_clean_benchmark_kb.py --download-if-missing
+# restart API after rebuild
 ```
 
-Restart the API after ingesting so it reloads the FAISS + BM25 indexes.
+Optional broader Wikipedia ingest (`scripts/ingest_wikipedia_hf.py`, `corpus/wikipedia/`) is available for open-domain exploration, but is **not** used for the default quality numbers.
+
+Restart the API after rebuilding so it reloads FAISS + BM25.
 
 ### Grounding & memory
 

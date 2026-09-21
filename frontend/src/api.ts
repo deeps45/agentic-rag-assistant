@@ -49,6 +49,14 @@ export type EvalSummary = {
   notes: string;
   cases: Array<Record<string, unknown>>;
   report_path?: string | null;
+  dataset?: string | null;
+  case_count?: number | null;
+  domain_baseline_score?: number | null;
+  domain_improved_score?: number | null;
+  domain_improvement_pct?: number | null;
+  hf_baseline_score?: number | null;
+  hf_improved_score?: number | null;
+  hf_improvement_pct?: number | null;
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

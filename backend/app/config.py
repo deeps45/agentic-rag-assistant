@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     eval_dir: Path = BASE_DIR / "data" / "evals"
     sample_docs_dir: Path = BASE_DIR / "sample_docs"
     corpus_dir: Path = BASE_DIR / "corpus" / "wikipedia"
+    hf_corpus_dir: Path = BASE_DIR / "corpus" / "hf_rag_mini_wikipedia"
 
     chunk_size: int = 800
     chunk_overlap: int = 120

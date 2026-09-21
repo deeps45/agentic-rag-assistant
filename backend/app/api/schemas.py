@@ -67,3 +67,11 @@ class EvalSummary(BaseModel):
     cases: list[dict[str, Any]]
     baseline_cases: list[dict[str, Any]] | None = None
     report_path: str | None = None
+    dataset: str | None = None
+    case_count: int | None = None
+    domain_baseline_score: float | None = None
+    domain_improved_score: float | None = None
+    domain_improvement_pct: float | None = None
+    hf_baseline_score: float | None = None
+    hf_improved_score: float | None = None
+    hf_improvement_pct: float | None = None

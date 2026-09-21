@@ -336,19 +336,33 @@ export default function App() {
                 </button>
               </div>
               {evalReport ? (
-                <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-xl bg-[var(--warm)] px-2 py-3">
-                    <p className="text-[11px] uppercase tracking-wider text-[var(--muted)]">Baseline</p>
-                    <p className="mt-1 text-lg font-semibold">{evalReport.baseline_score.toFixed(2)}</p>
+                <div className="mt-4 space-y-3">
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-xl bg-[var(--warm)] px-2 py-3">
+                      <p className="text-[11px] uppercase tracking-wider text-[var(--muted)]">Baseline</p>
+                      <p className="mt-1 text-lg font-semibold">{evalReport.baseline_score.toFixed(2)}</p>
+                    </div>
+                    <div className="rounded-xl bg-[var(--warm)] px-2 py-3">
+                      <p className="text-[11px] uppercase tracking-wider text-[var(--muted)]">Improved</p>
+                      <p className="mt-1 text-lg font-semibold">{evalReport.improved_score.toFixed(2)}</p>
+                    </div>
+                    <div className="rounded-xl bg-[var(--accent)] px-2 py-3 text-[var(--signal)]">
+                      <p className="text-[11px] uppercase tracking-wider opacity-80">Lift</p>
+                      <p className="mt-1 text-lg font-semibold">{formatPct(evalReport.improvement_pct)}</p>
+                    </div>
                   </div>
-                  <div className="rounded-xl bg-[var(--warm)] px-2 py-3">
-                    <p className="text-[11px] uppercase tracking-wider text-[var(--muted)]">Improved</p>
-                    <p className="mt-1 text-lg font-semibold">{evalReport.improved_score.toFixed(2)}</p>
-                  </div>
-                  <div className="rounded-xl bg-[var(--accent)] px-2 py-3 text-[var(--signal)]">
-                    <p className="text-[11px] uppercase tracking-wider opacity-80">Lift</p>
-                    <p className="mt-1 text-lg font-semibold">{formatPct(evalReport.improvement_pct)}</p>
-                  </div>
+                  {evalReport.dataset && (
+                    <p className="text-xs text-[var(--muted)]">
+                      {evalReport.dataset}
+                      {evalReport.case_count ? ` · ${evalReport.case_count} cases` : ""}
+                      {typeof evalReport.domain_improvement_pct === "number"
+                        ? ` · domain ${formatPct(evalReport.domain_improvement_pct)}`
+                        : ""}
+                      {typeof evalReport.hf_improvement_pct === "number"
+                        ? ` · HF QA ${formatPct(evalReport.hf_improvement_pct)}`
+                        : ""}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <p className="mt-3 text-sm text-[var(--muted)]">

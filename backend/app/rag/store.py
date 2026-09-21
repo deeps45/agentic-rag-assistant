@@ -406,14 +406,22 @@ class KnowledgeStore:
     def seed_samples_if_empty(self) -> list[DocumentMeta]:
         if self.document_count() > 0:
             return []
-        # Prefer the larger public Wikipedia corpus when available.
-        for corpus in (self.settings.corpus_dir, self.settings.sample_docs_dir):
+        # Prefer clean HF rag-mini-wikipedia, then curated samples, then wiki dumps.
+        candidates = [
+            getattr(self.settings, "hf_corpus_dir", self.settings.data_dir / "unused"),
+            self.settings.sample_docs_dir,
+            self.settings.corpus_dir,
+        ]
+        for corpus in candidates:
             if not corpus.exists():
                 continue
             files = sorted(
                 p
                 for p in corpus.glob("*")
-                if p.is_file() and p.suffix.lower() in {".txt", ".md", ".pdf", ".docx"}
+                if p.is_file()
+                and p.suffix.lower() in {".txt", ".md", ".pdf", ".docx"}
+                and p.name != "manifest.json"
+                and not p.name.upper().startswith("README")
             )
             if not files:
                 continue
