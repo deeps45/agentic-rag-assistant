@@ -1,0 +1,21 @@
+Retrieval Evaluation and Iterative Quality Improvement
+======================================================
+
+High-quality knowledge assistants need measurement, not vibes. A retrieval and evaluation
+pipeline scores both document retrieval and final answer relevance.
+
+Useful metrics
+--------------
+- Retrieval hit-rate: fraction of expected keywords present in top-k passages.
+- Lexical overlap with a reference answer.
+- Semantic relevance between question and generated answer via embedding similarity.
+- Composite score blending the above signals.
+
+Improvement loop
+----------------
+Start with a weak baseline such as returning a single raw chunk. Then enable agentic planning,
+broader top-k retrieval, and tool-assisted synthesis. Compare composite scores. Teams commonly
+observe roughly a 25% relative lift in answer relevance after iterating on retrieval depth,
+chunking, and grounded synthesis prompts.
+
+Persist evaluation reports so regressions are visible when documents or models change.

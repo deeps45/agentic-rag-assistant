@@ -1,0 +1,23 @@
+Retrieval-Augmented Generation (RAG) for Knowledge Assistants
+==============================================================
+
+Retrieval-Augmented Generation combines a retriever with a generator. Instead of asking a large
+language model to answer from parametric memory alone, the system first searches a document
+collection for relevant passages, then conditions the generation step on that evidence.
+
+Why RAG helps
+-------------
+- Reduces hallucinations by grounding answers in retrieved documents.
+- Keeps proprietary knowledge up to date without full model fine-tuning.
+- Enables source citations so users can verify claims.
+
+Typical RAG pipeline
+--------------------
+1. Ingest documents and split them into overlapping chunks.
+2. Embed each chunk into a vector space.
+3. At query time, embed the question and retrieve the nearest chunks.
+4. Build a prompt that includes the question plus retrieved context.
+5. Generate an answer that cites the supporting sources.
+
+Chunking strategy matters. Chunks that are too large dilute relevance; chunks that are too small
+lose surrounding context. Overlap between chunks preserves continuity across boundaries.

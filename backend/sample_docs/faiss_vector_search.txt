@@ -1,0 +1,18 @@
+FAISS Vector Search in Production Knowledge Bases
+=================================================
+
+FAISS (Facebook AI Similarity Search) is a library for efficient similarity search and clustering
+of dense vectors. In a knowledge assistant, each document chunk is embedded and stored in a FAISS
+index so queries can retrieve the most similar vectors in milliseconds.
+
+Key ideas
+---------
+- Vectors represent semantic meaning of text chunks.
+- IndexFlatL2 performs exact L2 nearest-neighbor search and is ideal for moderate corpora.
+- Approximate indexes (IVF, HNSW) trade a little recall for much higher speed at scale.
+- Metadata such as filename and chunk index should travel with each vector for citations.
+
+Operational tips
+----------------
+Persist the FAISS index to disk after ingestion. Rebuild when embeddings models change. Measure
+retrieval quality with hit-rate against expected keywords before tuning generation prompts.

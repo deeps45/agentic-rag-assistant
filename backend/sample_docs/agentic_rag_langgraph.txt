@@ -1,0 +1,20 @@
+Agentic RAG with LangGraph and Tool Execution
+=============================================
+
+An agentic RAG assistant goes beyond single-shot retrieval. Using LangGraph, the system plans a
+multi-step strategy, executes tools, and synthesizes a final response.
+
+Typical agent loop
+------------------
+1. Plan: decompose the user question into retrieval and reasoning steps.
+2. Retrieve: call semantic search over FAISS to gather evidence.
+3. Tools: optionally list documents or define domain terms.
+4. Synthesize: produce a source-grounded answer that references retrieved passages.
+5. Evaluate: score answer relevance and iterate on retrieval parameters.
+
+LangChain provides document loaders, splitters, embeddings, and vector store integrations.
+LangGraph wires those capabilities into an explicit state machine so each step is inspectable.
+Tool execution lets the assistant gather missing context instead of guessing.
+
+This design is especially useful for multi-hop document queries that require planning before
+answer generation.
