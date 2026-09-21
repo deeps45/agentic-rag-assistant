@@ -348,15 +348,15 @@ class KnowledgeStore:
         """Map hybrid evidence to an L2-like distance (lower = better) for gating."""
         max_d = self.settings.max_retrieval_distance
         if faiss_l2 is not None and bm25_score is not None and max_bm25 > 0:
-            # Present in both channels — trust dense distance, slight boost for lexical agree.
             lexical = min(1.0, bm25_score / max_bm25)
-            return float(faiss_l2) * (1.0 - 0.12 * lexical)
+            return float(faiss_l2) * (1.0 - 0.15 * lexical)
         if faiss_l2 is not None:
             return float(faiss_l2)
+        # BM25-only hits must NOT outrank dense matches with a fake ~0.2 distance.
+        # Keep them near the cutoff so they only survive when dense retrieval is empty/weak.
         if bm25_score is not None and max_bm25 > 0:
-            # Strong lexical-only hits map under the distance cutoff.
             lexical = min(1.0, bm25_score / max_bm25)
-            return max_d * (1.0 - 0.85 * lexical)
+            return max_d * (1.05 - 0.2 * lexical)
         return max_d + 1.0
 
     def similarity_search(self, query: str, k: int | None = None) -> list[Document]:
@@ -365,23 +365,43 @@ class KnowledgeStore:
     def similarity_search_with_score(
         self, query: str, k: int | None = None
     ) -> list[tuple[Document, float]]:
-        """Hybrid BM25 + FAISS search. Score is L2-like distance (lower is better)."""
+        """Hybrid BM25 + FAISS search. Score is L2-like distance (lower is better).
+
+        Dense FAISS hits are primary. BM25 re-ranks/boosts overlapping hits and can
+        surface rare exact terms (e.g. FAISS) without flooding results with common-word noise.
+        """
         k = k or self.settings.top_k
         if self.chunk_count() == 0:
             return []
 
-        candidate_k = min(max(k * 3, k), max(self.chunk_count(), 1))
+        candidate_k = min(max(k * 4, k), max(self.chunk_count(), 1))
         dense = self.vectorstore.similarity_search_with_score(query, k=candidate_k)
         sparse = self._bm25_search(query, k=candidate_k)
         max_bm25 = max((s for _, s in sparse), default=0.0)
 
-        fused = self._rrf_fuse(dense, sparse, k=k)
-        out: list[tuple[Document, float]] = []
+        # Rare query tokens (len>=5) → allow strong BM25-only rescue (e.g. "faiss").
+        rare_tokens = {t for t in _tokenize(query) if len(t) >= 5}
+        sparse_rescue: list[tuple[Document, float]] = []
+        for doc, score in sparse:
+            if max_bm25 <= 0:
+                break
+            text = doc.page_content.lower()
+            if any(tok in text for tok in rare_tokens) and score >= 0.35 * max_bm25:
+                sparse_rescue.append((doc, score))
+
+        fused = self._rrf_fuse(dense, sparse_rescue if sparse_rescue else sparse[: max(k, 3)], k=max(k * 2, k))
+        # Prefer entries that have a FAISS distance; demote pure lexical noise.
+        scored: list[tuple[Document, float]] = []
         for doc, _rrf, faiss_l2, bm25_score in fused:
             dist = self._hybrid_distance(faiss_l2, bm25_score, max_bm25)
-            out.append((doc, dist))
-        out.sort(key=lambda x: x[1])
-        return out
+            # Extra penalty if no dense evidence and no rare-token overlap.
+            if faiss_l2 is None:
+                text = doc.page_content.lower()
+                if not any(tok in text for tok in rare_tokens):
+                    dist = max(dist, self.settings.max_retrieval_distance + 0.25)
+            scored.append((doc, dist))
+        scored.sort(key=lambda x: x[1])
+        return scored[:k]
 
     def seed_samples_if_empty(self) -> list[DocumentMeta]:
         if self.document_count() > 0:

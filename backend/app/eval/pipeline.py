@@ -53,6 +53,7 @@ class EvalCase:
     reference_answer: str = ""
 
 
+# Benchmark questions aligned with curated domain docs + Wikipedia AI coverage.
 DEFAULT_CASES: list[EvalCase] = [
     EvalCase(
         id="rag-basics",
@@ -82,6 +83,22 @@ DEFAULT_CASES: list[EvalCase] = [
         expected_keywords=["relevance", "evaluation", "metrics", "improve"],
         reference_answer=(
             "Offline eval measures retrieval hit-rate and answer relevance, then tuning retrieval improves quality."
+        ),
+    ),
+    EvalCase(
+        id="transformers",
+        question="What is a transformer architecture in deep learning and why is attention important?",
+        expected_keywords=["transformer", "attention", "token", "neural"],
+        reference_answer=(
+            "Transformers are neural architectures based on multi-head attention that contextualize tokens in parallel."
+        ),
+    ),
+    EvalCase(
+        id="llms",
+        question="What is a large language model?",
+        expected_keywords=["language", "model", "text", "training"],
+        reference_answer=(
+            "A large language model is a neural model trained on large text corpora to predict and generate language."
         ),
     ),
 ]
@@ -115,6 +132,10 @@ def _score_answer(case: EvalCase, answer: str, sources: list[dict[str, Any]], hi
         len(case.expected_keywords), 1
     )
     answer_overlap = max(overlap, kw_cov * 0.7)
+    # Correct grounded refusals should not be rewarded as high-quality answers.
+    refusal_markers = ("do not have", "cannot be answered", "does not contain", "no supporting evidence", "missing")
+    if any(m in answer.lower() for m in refusal_markers) and kw_cov < 0.5:
+        answer_overlap = min(answer_overlap, 0.15)
     semantic = cosine_relevance(case.question, answer)
     composite = 0.4 * hit + 0.35 * answer_overlap + 0.25 * semantic
     return CaseResult(
@@ -158,7 +179,7 @@ def run_evaluation(persist: bool = True) -> dict[str, Any]:
         "improvement_pct": round(improvement_pct, 2),
         "notes": (
             "Baseline = top-1 chunk dump without agentic planning/tools. "
-            "Improved = LangGraph plan → retrieve/tools → grounded synthesis with fuller top-k. "
+            "Improved = LangGraph plan → hybrid retrieve/tools → grounded synthesis. "
             "Composite = 0.4*retrieval_hit + 0.35*answer_overlap + 0.25*semantic_relevance."
         ),
         "cases": [asdict(c) for c in improved_cases],
