@@ -152,7 +152,7 @@ def run_evaluation(persist: bool = True) -> dict[str, Any]:
 
     report = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "mode": "openai" if settings.use_openai else "mock",
+        "mode": get_settings().llm_provider,
         "baseline_score": round(baseline_score, 4),
         "improved_score": round(improved_score, 4),
         "improvement_pct": round(improvement_pct, 2),

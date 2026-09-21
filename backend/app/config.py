@@ -1,4 +1,4 @@
-"""Application settings with OpenAI or local mock fallback."""
+"""Application settings: TAMU Chat API, OpenAI, or local mock."""
 
 from functools import lru_cache
 from pathlib import Path
@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
     cors_origins: list[str] = ["http://127.0.0.1:5284", "http://localhost:5284"]
 
+    # TAMU System AI Chat (preferred when set)
+    tamus_ai_chat_api_key: str | None = None
+    tamus_ai_chat_api_endpoint: str = "https://chat-api.tamu.ai"
+    tamus_chat_model: str = "protected.gemini-2.5-flash-lite"
+    tamus_embedding_model: str = "protected.text-embedding-3-small"
+
+    # Optional OpenAI fallback
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     embedding_model: str = "text-embedding-3-small"
@@ -35,8 +42,24 @@ class Settings(BaseSettings):
     top_k: int = 4
 
     @property
+    def use_tamus(self) -> bool:
+        return bool(self.tamus_ai_chat_api_key)
+
+    @property
     def use_openai(self) -> bool:
-        return bool(self.openai_api_key)
+        return bool(self.openai_api_key) and not self.use_tamus
+
+    @property
+    def llm_provider(self) -> str:
+        if self.use_tamus:
+            return "tamus"
+        if self.openai_api_key:
+            return "openai"
+        return "mock"
+
+    @property
+    def tamus_api_base(self) -> str:
+        return self.tamus_ai_chat_api_endpoint.rstrip("/") + "/api"
 
 
 @lru_cache

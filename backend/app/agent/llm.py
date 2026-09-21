@@ -1,4 +1,4 @@
-"""LLM helpers with OpenAI or grounded mock synthesis."""
+"""LLM helpers: TAMU Chat API, OpenAI, or grounded mock synthesis."""
 
 from __future__ import annotations
 
@@ -36,7 +36,6 @@ class MockChatModel(BaseChatModel):
             elif isinstance(msg, HumanMessage):
                 human += str(msg.content) + "\n"
 
-        # Planning prompts ask to decompose; synthesis prompts include Context.
         if "decompose" in system.lower() and "context:" not in (system + human).lower():
             steps = [
                 "1. Clarify the information need from the user question.",
@@ -57,7 +56,6 @@ class MockChatModel(BaseChatModel):
                 "Upload related documents and try again."
             )
 
-        # Pull source-labeled blocks when available.
         blocks = re.split(r"\n\n--\n\n", context)
         bullets = []
         cited_terms = []
@@ -68,7 +66,6 @@ class MockChatModel(BaseChatModel):
             bullets.append(f"- {clean[:300]}")
             cited_terms.extend(re.findall(r"[A-Za-z][A-Za-z0-9_\-]{3,}", clean.lower()))
 
-        # Emphasize domain vocabulary present in retrieved evidence for relevance metrics.
         key_phrases = []
         for phrase in [
             "retrieval",
@@ -91,24 +88,36 @@ class MockChatModel(BaseChatModel):
             if phrase in " ".join(cited_terms) or phrase in context.lower():
                 key_phrases.append(phrase)
 
-        answer = (
+        return (
             f"Based on the retrieved knowledge base passages, here is a grounded answer to: {question}\n\n"
             + "\n".join(bullets)
             + "\n\nKey evidence themes: "
             + ", ".join(dict.fromkeys(key_phrases) or ["retrieved context"])
             + ".\nThis synthesis stays within the retrieved evidence and cites the listed sources."
         )
-        return answer
 
 
 def get_chat_model() -> BaseChatModel:
     settings = get_settings()
-    if settings.use_openai:
+    if settings.use_tamus:
         from langchain_openai import ChatOpenAI
 
-        return ChatOpenAI(model=settings.openai_model, temperature=0.2, api_key=settings.openai_api_key)
+        return ChatOpenAI(
+            model=settings.tamus_chat_model,
+            temperature=0.2,
+            api_key=settings.tamus_ai_chat_api_key,
+            base_url=settings.tamus_api_base,
+        )
+    if settings.openai_api_key:
+        from langchain_openai import ChatOpenAI
+
+        return ChatOpenAI(
+            model=settings.openai_model,
+            temperature=0.2,
+            api_key=settings.openai_api_key,
+        )
     return MockChatModel()
 
 
 def llm_mode() -> str:
-    return "openai" if get_settings().use_openai else "mock"
+    return get_settings().llm_provider

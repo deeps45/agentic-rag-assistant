@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
 import pytest
@@ -14,6 +13,12 @@ from app.main import app
 
 @pytest.fixture(autouse=True)
 def fresh_data(tmp_path, monkeypatch):
+    # Force offline mock mode in tests (ignore developer .env keys).
+    monkeypatch.setenv("TAMUS_AI_CHAT_API_KEY", "")
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    monkeypatch.delenv("TAMUS_AI_CHAT_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
     data = tmp_path / "data"
     docs = data / "documents"
     index = data / "faiss_index"
@@ -21,23 +26,21 @@ def fresh_data(tmp_path, monkeypatch):
     for p in (docs, index, evals):
         p.mkdir(parents=True, exist_ok=True)
 
+    get_settings.cache_clear()
     settings = get_settings()
+    monkeypatch.setattr(settings, "tamus_ai_chat_api_key", None)
+    monkeypatch.setattr(settings, "openai_api_key", None)
     monkeypatch.setattr(settings, "data_dir", data)
     monkeypatch.setattr(settings, "docs_dir", docs)
     monkeypatch.setattr(settings, "index_dir", index)
     monkeypatch.setattr(settings, "eval_dir", evals)
-    get_settings.cache_clear()
+    monkeypatch.setattr(settings, "sample_docs_dir", Path(__file__).resolve().parents[1] / "sample_docs")
 
-    # Reset singleton store
-    import app.rag.store as store_mod
     import app.agent.graph as graph_mod
+    import app.rag.store as store_mod
 
     store_mod._store = None
     graph_mod._graph = None
-
-    # Copy samples into sample_docs location used by settings
-    sample_src = Path(__file__).resolve().parents[1] / "sample_docs"
-    monkeypatch.setattr(settings, "sample_docs_dir", sample_src)
 
     yield
     store_mod._store = None
@@ -59,6 +62,7 @@ def test_health(client):
 def test_seed_and_chat(client):
     status = client.get("/api/status").json()
     assert status["documents"] >= 4
+    assert status["mode"] == "mock"
     chat = client.post("/api/chat", json={"question": "What is RAG and why use it?"})
     assert chat.status_code == 200
     body = chat.json()

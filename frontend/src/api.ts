@@ -33,6 +33,8 @@ export type Status = {
   documents: number;
   chunks: number;
   openai_configured: boolean;
+  tamus_configured?: boolean;
+  llm_configured?: boolean;
 };
 
 export type EvalSummary = {

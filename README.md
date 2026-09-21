@@ -9,7 +9,7 @@ Python + LangGraph/LangChain/FAISS backend and React UI for document ingestion, 
 - **Tools** — semantic search, list documents, define term
 - **Source-grounded chat** — answers with cited passages and full tool/plan traces
 - **Evaluation pipeline** — baseline vs improved composite relevance score (hit-rate, overlap, semantic similarity)
-- **LLM modes** — OpenAI when `OPENAI_API_KEY` is set; offline mock mode otherwise
+- **LLM modes** — TAMU Chat API (preferred), OpenAI fallback, or offline mock
 
 ## Quick start
 
@@ -47,12 +47,23 @@ Or run both via `bash scripts/dev.sh`.
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `OPENAI_API_KEY` | No | Enables OpenAI chat + embeddings; omit for mock mode |
-| `OPENAI_MODEL` | No | Default `gpt-4o-mini` |
-| `EMBEDDING_MODEL` | No | Default `text-embedding-3-small` |
+| `TAMUS_AI_CHAT_API_KEY` | Recommended | Texas A&M System AI Chat API key |
+| `TAMUS_AI_CHAT_API_ENDPOINT` | No | Default `https://chat-api.tamu.ai` |
+| `TAMUS_CHAT_MODEL` | No | Default `protected.gemini-2.5-flash-lite` |
+| `TAMUS_EMBEDDING_MODEL` | No | Default `protected.text-embedding-3-small` |
+| `OPENAI_API_KEY` | No | Fallback if TAMU key is unset |
+| `OPENAI_MODEL` / `EMBEDDING_MODEL` | No | OpenAI model names |
 
-**Sufficient to start:** nothing — mock mode works with seeded sample docs.  
-**For production-quality answers:** set `OPENAI_API_KEY` in `backend/.env`.
+**Priority:** TAMU → OpenAI → offline mock.
+
+Copy `backend/.env.example` to `backend/.env` and set your TAMU key:
+
+```bash
+cp backend/.env.example backend/.env
+# edit TAMUS_AI_CHAT_API_KEY=...
+```
+
+After changing embedding providers, delete `backend/data/` once so FAISS rebuilds with the new vector size.
 
 ## API surface
 

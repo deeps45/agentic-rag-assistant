@@ -38,7 +38,9 @@ def status() -> StatusOut:
         mode=llm_mode(),
         documents=store.document_count(),
         chunks=store.chunk_count(),
-        openai_configured=settings.use_openai,
+        openai_configured=bool(settings.openai_api_key),
+        tamus_configured=settings.use_tamus,
+        llm_configured=settings.llm_provider != "mock",
     )
 
 

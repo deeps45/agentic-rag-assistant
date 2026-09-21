@@ -72,7 +72,8 @@ def plan_node(state: AgentState) -> dict[str, Any]:
         SystemMessage(
             content=(
                 "You are a planning module for an agentic RAG assistant. "
-                "Decompose the user question into numbered retrieval and synthesis steps."
+                "Decompose the user question into numbered retrieval and synthesis steps. "
+                "Output only the numbered plan — no preamble or analysis."
             )
         ),
         HumanMessage(content=f"Question: {state['question']}"),

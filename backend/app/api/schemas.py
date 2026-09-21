@@ -50,6 +50,8 @@ class StatusOut(BaseModel):
     documents: int
     chunks: int
     openai_configured: bool
+    tamus_configured: bool = False
+    llm_configured: bool = False
 
 
 class EvalSummary(BaseModel):

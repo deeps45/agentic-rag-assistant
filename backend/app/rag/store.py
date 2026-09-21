@@ -77,15 +77,28 @@ class KnowledgeStore:
         index_file = self.settings.index_dir / "index.faiss"
         if index_file.exists():
             try:
-                self._vectorstore = FAISS.load_local(
+                store = FAISS.load_local(
                     str(self.settings.index_dir),
                     get_embeddings(),
                     allow_dangerous_deserialization=True,
                 )
+                # Rebuild if embedding provider/dimension changed (e.g. mock → TAMU).
+                expected = self._embedding_dim()
+                if store.index.d != expected:
+                    raise ValueError(f"index dim {store.index.d} != embedding dim {expected}")
+                self._vectorstore = store
                 return
             except Exception:
                 shutil.rmtree(self.settings.index_dir, ignore_errors=True)
                 self.settings.index_dir.mkdir(parents=True, exist_ok=True)
+                # Drop stale meta so samples re-seed with the new embeddings.
+                if self.meta_path.exists():
+                    self.meta_path.unlink()
+                self._documents = {}
+                # Also clear copied docs so seed starts clean.
+                for path in self.settings.docs_dir.glob("*"):
+                    if path.is_file():
+                        path.unlink()
         self._vectorstore = self._create_empty_index()
         self._persist()
 
