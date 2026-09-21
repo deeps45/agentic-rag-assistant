@@ -7,6 +7,8 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5284,
+    // Allow Cursor port-forwards and public demo tunnels (loca.lt, trycloudflare, etc.).
+    allowedHosts: true,
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8472",
