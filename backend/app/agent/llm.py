@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 import re
-from typing import Any
+import time
+from typing import Any, Sequence
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class MockChatModel(BaseChatModel):
@@ -19,8 +24,6 @@ class MockChatModel(BaseChatModel):
         return "mock-grounded"
 
     def _generate(self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any):
-        from langchain_core.outputs import ChatGeneration, ChatResult
-
         text = self._respond(messages)
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=text))])
 
@@ -68,22 +71,9 @@ class MockChatModel(BaseChatModel):
 
         key_phrases = []
         for phrase in [
-            "retrieval",
-            "generation",
-            "hallucination",
-            "documents",
-            "faiss",
-            "similarity",
-            "vector",
-            "index",
-            "plan",
-            "tool",
-            "retrieve",
-            "synthesize",
-            "relevance",
-            "evaluation",
-            "metrics",
-            "improve",
+            "retrieval", "generation", "hallucination", "documents", "faiss", "similarity",
+            "vector", "index", "plan", "tool", "retrieve", "synthesize", "relevance",
+            "evaluation", "metrics", "improve",
         ]:
             if phrase in " ".join(cited_terms) or phrase in context.lower():
                 key_phrases.append(phrase)
@@ -97,27 +87,112 @@ class MockChatModel(BaseChatModel):
         )
 
 
-def get_chat_model() -> BaseChatModel:
-    settings = get_settings()
-    if settings.use_tamus:
-        from langchain_openai import ChatOpenAI
+def _is_rate_limit_error(exc: BaseException) -> bool:
+    text = str(exc).lower()
+    return any(
+        marker in text
+        for marker in ("429", "rate limit", "ratelimit", "resource_exhausted", "throttling", "quota")
+    )
 
-        return ChatOpenAI(
-            model=settings.tamus_chat_model,
+
+class ResilientChatModel(BaseChatModel):
+    """Retry + optional model fallbacks for TAMU / OpenAI rate limits."""
+
+    def __init__(
+        self,
+        models: Sequence[BaseChatModel],
+        *,
+        max_retries: int = 4,
+        base_delay: float = 1.5,
+    ) -> None:
+        super().__init__()
+        if not models:
+            raise ValueError("ResilientChatModel requires at least one model")
+        self._models = list(models)
+        self._max_retries = max_retries
+        self._base_delay = base_delay
+
+    @property
+    def _llm_type(self) -> str:
+        return "resilient-chat"
+
+    def _generate(self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any) -> ChatResult:
+        last_error: BaseException | None = None
+        for model_idx, model in enumerate(self._models):
+            for attempt in range(self._max_retries):
+                try:
+                    return model._generate(messages, stop=stop, **kwargs)
+                except Exception as exc:  # noqa: BLE001
+                    last_error = exc
+                    if not _is_rate_limit_error(exc):
+                        raise
+                    delay = self._base_delay * (2 ** attempt)
+                    logger.warning(
+                        "LLM rate-limited on model %s (attempt %s/%s); sleeping %.1fs",
+                        getattr(model, "model_name", model_idx),
+                        attempt + 1,
+                        self._max_retries,
+                        delay,
+                    )
+                    time.sleep(delay)
+            logger.warning("Exhausted retries for model index %s; trying fallback if available", model_idx)
+        assert last_error is not None
+        raise last_error
+
+    async def _agenerate(self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any):
+        return self._generate(messages, stop=stop, **kwargs)
+
+
+def _tamus_models() -> list[BaseChatModel]:
+    from langchain_openai import ChatOpenAI
+
+    settings = get_settings()
+    model_ids = [settings.tamus_chat_model, *settings.tamus_fallback_models]
+    # de-dupe preserving order
+    seen: set[str] = set()
+    unique: list[str] = []
+    for mid in model_ids:
+        if mid and mid not in seen:
+            seen.add(mid)
+            unique.append(mid)
+    return [
+        ChatOpenAI(
+            model=mid,
             temperature=0.2,
             api_key=settings.tamus_ai_chat_api_key,
             base_url=settings.tamus_api_base,
+            max_retries=0,  # we handle retries ourselves
+            request_timeout=60,
         )
+        for mid in unique
+    ]
+
+
+def get_chat_model() -> BaseChatModel:
+    settings = get_settings()
+    if settings.use_tamus:
+        return ResilientChatModel(_tamus_models(), max_retries=4, base_delay=1.5)
     if settings.openai_api_key:
         from langchain_openai import ChatOpenAI
 
-        return ChatOpenAI(
-            model=settings.openai_model,
-            temperature=0.2,
-            api_key=settings.openai_api_key,
+        return ResilientChatModel(
+            [
+                ChatOpenAI(
+                    model=settings.openai_model,
+                    temperature=0.2,
+                    api_key=settings.openai_api_key,
+                    max_retries=0,
+                )
+            ],
+            max_retries=3,
+            base_delay=1.0,
         )
     return MockChatModel()
 
 
 def llm_mode() -> str:
     return get_settings().llm_provider
+
+
+class RateLimitError(RuntimeError):
+    """Raised when all LLM providers are rate-limited."""

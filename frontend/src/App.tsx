@@ -119,12 +119,15 @@ export default function App() {
       const res = await api.chat(cleaned, history);
       setTurns((prev) => [...prev, { role: "assistant", content: res.answer, meta: res }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Chat failed");
+      const message = err instanceof Error ? err.message : "Chat failed";
+      setError(message);
       setTurns((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Something went wrong while synthesizing an answer. Try again.",
+          content: message.includes("rate-limited") || message.includes("429")
+            ? "The LLM provider is temporarily rate-limited. Please wait a few seconds and try again."
+            : `Could not synthesize an answer: ${message}`,
         },
       ]);
     } finally {

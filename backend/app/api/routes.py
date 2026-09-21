@@ -90,8 +90,20 @@ def chat(body: ChatRequest) -> ChatResponse:
         for h in (body.history or [])
         if (h.get("content") or "").strip()
     ]
-    result = run_agent(body.question.strip(), history=history)
-    return ChatResponse(**result)
+    try:
+        result = run_agent(body.question.strip(), history=history)
+        return ChatResponse(**result)
+    except Exception as exc:  # noqa: BLE001
+        text = str(exc).lower()
+        if any(m in text for m in ("429", "rate limit", "resource_exhausted", "throttling")):
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    "The TAMU chat model is rate-limited right now (429). "
+                    "Wait a few seconds and try again — the app will also auto-retry / fall back to another model."
+                ),
+            ) from exc
+        raise HTTPException(status_code=500, detail=f"Chat failed: {exc}") from exc
 
 
 @router.post("/eval/run", response_model=EvalSummary)

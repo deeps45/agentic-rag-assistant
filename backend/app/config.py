@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     tamus_ai_chat_api_key: str | None = None
     tamus_ai_chat_api_endpoint: str = "https://chat-api.tamu.ai"
     tamus_chat_model: str = "protected.gemini-2.5-flash-lite"
+    # Tried in order after the primary model is rate-limited.
+    tamus_fallback_models: list[str] = [
+        "protected.gpt-4.1-mini",
+        "protected.gpt-4o-mini",
+        "protected.gemini-2.5-flash",
+    ]
     tamus_embedding_model: str = "protected.text-embedding-3-small"
 
     # Optional OpenAI fallback
