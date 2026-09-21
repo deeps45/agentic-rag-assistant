@@ -380,10 +380,27 @@ export default function App() {
             className="flex min-h-[34rem] flex-col rounded-[1.6rem] border border-[var(--line)] bg-[var(--panel)] backdrop-blur"
           >
             <div className="border-b border-[var(--line)] px-5 py-4 md:px-6">
-              <h2 className="display text-3xl">Conversational query</h2>
-              <p className="mt-1 text-sm text-[var(--muted)]">
-                Multi-step plan → FAISS retrieval → tools → grounded synthesis.
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="display text-3xl">Conversational query</h2>
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    Multi-step plan → hybrid retrieval → tools → grounded synthesis with memory.
+                  </p>
+                </div>
+                {turns.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTurns([]);
+                      setError(null);
+                    }}
+                    disabled={busy}
+                    className="shrink-0 rounded-full border border-[var(--line)] px-3 py-1.5 text-xs text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--ink)] disabled:opacity-50"
+                  >
+                    Clear chat
+                  </button>
+                )}
+              </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {SUGGESTIONS.map((s) => (
                   <button
