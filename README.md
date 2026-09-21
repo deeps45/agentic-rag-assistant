@@ -1,12 +1,20 @@
 # Groundline — Agentic RAG Knowledge Assistant
 
-Python + LangGraph/LangChain/FAISS backend and React UI for document ingestion, semantic retrieval, agentic multi-step querying, source-grounded answers, and retrieval evaluation.
+Python + LangGraph/LangChain/FAISS backend and React UI for document ingestion, hybrid retrieval, agentic multi-step querying, source-grounded answers, and retrieval evaluation.
+
+**GitHub:** [https://github.com/deeps45/agentic-rag-assistant](https://github.com/deeps45/agentic-rag-assistant)
+
+```bash
+git clone https://github.com/deeps45/agentic-rag-assistant.git
+cd agentic-rag-assistant
+```
 
 ## Features
 
 - **Document ingestion** — upload `.txt`, `.md`, `.pdf`, `.docx`, or paste text; chunked and embedded into FAISS
-- **Agentic RAG** — LangGraph pipeline: plan → retrieve + tools → synthesize
-- **Tools** — semantic search, list documents, define term
+- **Hybrid retrieval** — BM25 (lexical) + FAISS (dense) fused with reciprocal rank fusion to cut off-topic sources
+- **Agentic RAG** — LangGraph pipeline: plan → retrieve + tools → synthesize → ground-check
+- **Tools** — hybrid semantic search, list documents, define term
 - **Source-grounded chat** — answers with cited passages and full tool/plan traces
 - **Evaluation pipeline** — baseline vs improved composite relevance score (hit-rate, overlap, semantic similarity)
 - **LLM modes** — TAMU Chat API (preferred), OpenAI fallback, or offline mock
@@ -24,7 +32,7 @@ Python + LangGraph/LangChain/FAISS backend and React UI for document ingestion, 
 ```bash
 cd backend
 python3 -m pip install -r requirements.txt
-cp .env.example .env   # add OPENAI_API_KEY if you have one
+cp .env.example .env   # add TAMUS_AI_CHAT_API_KEY or OPENAI_API_KEY
 export PYTHONPATH="$(pwd)"
 python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8472
 ```
@@ -69,23 +77,27 @@ Groundline ships with scripts for large public corpora:
 
 1. **Wikipedia extracts** (CC BY-SA) — `backend/corpus/wikipedia/`
 2. **Hugging Face `rag-datasets/rag-mini-wikipedia`** — 3,200 passages
+3. **Hugging Face streaming `wikimedia/wikipedia` `20231101.en`** — additional articles (keeps existing KB)
 
 ```bash
 cd backend
-# Wikipedia articles
+# Curated Wikipedia articles
 python3 scripts/download_wikipedia_corpus.py
-PYTHONPATH=. python3 scripts/ingest_corpus.py
+PYTHONPATH=. python3 scripts/ingest_corpus.py --keep-existing
 
-# Large HF corpus (adds breadth; use --replace to wipe first)
+# HF rag-mini shards (adds breadth; use --replace to wipe first)
 PYTHONPATH=. python3 scripts/ingest_hf_rag_mini.py
+
+# Stream a substantial Wikipedia batch (default 1000 articles; does not wipe)
+PYTHONPATH=. python3 scripts/ingest_wikipedia_hf.py --limit 1000
 ```
 
-Restart the API after ingesting so it reloads the FAISS index.
+Restart the API after ingesting so it reloads the FAISS + BM25 indexes.
 
 ### Grounding & memory
 
 - Conversation history is sent with each chat turn (follow-ups resolve via memory).
-- Weak FAISS matches are dropped (`MAX_RETRIEVAL_DISTANCE`).
+- Hybrid retrieval (BM25 + FAISS / RRF) ranks candidates; weak matches are dropped (`MAX_RETRIEVAL_DISTANCE`).
 - Answers must cite sources; a ground-check step rewrites or refuses if citations are missing.
 
 ## API surface
@@ -102,7 +114,7 @@ Restart the API after ingesting so it reloads the FAISS index.
 ```
 backend/app/
   agent/     # LangGraph graph, tools, LLM
-  rag/       # embeddings + FAISS store
+  rag/       # embeddings + hybrid FAISS/BM25 store
   eval/      # relevance evaluation
   api/       # FastAPI routes
 frontend/    # React + Vite + Tailwind UI

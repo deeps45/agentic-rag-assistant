@@ -11,6 +11,7 @@ venv/
 frontend/dist/
 backend/data/
 backend/corpus/hf_rag_mini_wikipedia/
+backend/corpus/wikipedia_hf/
 *.log
 .DS_Store
 

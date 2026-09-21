@@ -12,7 +12,7 @@ from app.rag.store import get_store
 
 @tool
 def semantic_search(query: str, top_k: int = 4) -> str:
-    """Search the knowledge base for passages relevant to the query."""
+    """Hybrid search (BM25 + FAISS) over the knowledge base for relevant passages."""
     store = get_store()
     hits = store.similarity_search_with_score(query, k=top_k)
     if not hits:
@@ -21,7 +21,8 @@ def semantic_search(query: str, top_k: int = 4) -> str:
     for doc, score in hits:
         blocks.append(
             f"Source: {doc.metadata.get('filename', 'unknown')} "
-            f"(chunk {doc.metadata.get('chunk_index', 0)}, score={score:.4f})\n{doc.page_content}"
+            f"(chunk {doc.metadata.get('chunk_index', 0)}, hybrid_distance={score:.4f})\n"
+            f"{doc.page_content}"
         )
     return "\n\n--\n\n".join(blocks)
 
