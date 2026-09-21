@@ -10,6 +10,7 @@ venv/
 # Build / runtime
 frontend/dist/
 backend/data/
+backend/corpus/hf_rag_mini_wikipedia/
 *.log
 .DS_Store
 
