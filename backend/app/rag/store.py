@@ -365,16 +365,20 @@ class KnowledgeStore:
     def similarity_search_with_score(
         self, query: str, k: int | None = None
     ) -> list[tuple[Document, float]]:
-        """Hybrid BM25 + FAISS search. Score is L2-like distance (lower is better).
+        """Hybrid BM25 + FAISS search, then cross-encoder re-rank.
 
-        Dense FAISS hits are primary. BM25 re-ranks/boosts overlapping hits and can
-        surface rare exact terms (e.g. FAISS) without flooding results with common-word noise.
+        Score is L2-like distance (lower is better).
         """
+        from app.rag.rerank import rerank_documents
+
         k = k or self.settings.top_k
         if self.chunk_count() == 0:
             return []
 
-        candidate_k = min(max(k * 4, k), max(self.chunk_count(), 1))
+        candidate_k = min(
+            max(k * 4, self.settings.rerank_candidates, k),
+            max(self.chunk_count(), 1),
+        )
         dense = self.vectorstore.similarity_search_with_score(query, k=candidate_k)
         sparse = self._bm25_search(query, k=candidate_k)
         max_bm25 = max((s for _, s in sparse), default=0.0)
@@ -389,7 +393,12 @@ class KnowledgeStore:
             if any(tok in text for tok in rare_tokens) and score >= 0.35 * max_bm25:
                 sparse_rescue.append((doc, score))
 
-        fused = self._rrf_fuse(dense, sparse_rescue if sparse_rescue else sparse[: max(k, 3)], k=max(k * 2, k))
+        fuse_k = min(max(self.settings.rerank_candidates, k * 2), max(self.chunk_count(), 1))
+        fused = self._rrf_fuse(
+            dense,
+            sparse_rescue if sparse_rescue else sparse[: max(k, 3)],
+            k=fuse_k,
+        )
         # Prefer entries that have a FAISS distance; demote pure lexical noise.
         scored: list[tuple[Document, float]] = []
         for doc, _rrf, faiss_l2, bm25_score in fused:
@@ -401,7 +410,8 @@ class KnowledgeStore:
                     dist = max(dist, self.settings.max_retrieval_distance + 0.25)
             scored.append((doc, dist))
         scored.sort(key=lambda x: x[1])
-        return scored[:k]
+        # Cross-encoder (or interaction fallback) over the hybrid shortlist.
+        return rerank_documents(query, scored[:fuse_k], top_n=k)
 
     def seed_samples_if_empty(self) -> list[DocumentMeta]:
         if self.document_count() > 0:

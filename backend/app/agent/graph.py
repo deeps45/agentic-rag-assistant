@@ -295,6 +295,17 @@ def retrieve_and_tools_node(state: AgentState) -> dict[str, Any]:
         )
 
     retrieved = _filter_retrieved(retrieved, question, limit=4)
+    from app.rag.rerank import annotate_rerank_meta, reranker_backend
+
+    annotate_rerank_meta(question, retrieved)
+    if retrieved:
+        trace.append(
+            {
+                "tool": "rerank",
+                "args": {"backend": reranker_backend(), "kept": len(retrieved)},
+                "output": f"Re-ranked hybrid candidates with {reranker_backend()}; kept {len(retrieved)} passages.",
+            }
+        )
 
     for term in _extract_terms(state["question"]):
         definition = run_tool("define_term", {"term": term})
@@ -314,7 +325,21 @@ def retrieve_and_tools_node(state: AgentState) -> dict[str, Any]:
 
 
 def synthesize_node(state: AgentState) -> dict[str, Any]:
+    built = _build_synthesize_prompt(state)
+    if built.get("refusal"):
+        return {
+            "answer": built["refusal"],
+            "sources": [],
+            "grounded": False,
+            "confidence": 0.0,
+            "messages": [],
+        }
     llm = get_chat_model()
+    answer = str(llm.invoke(built["prompt"]).content)
+    return {"answer": answer, "sources": built["sources"], "messages": built["prompt"]}
+
+
+def _build_synthesize_prompt(state: AgentState) -> dict[str, Any]:
     context_blocks = []
     sources = []
     for idx, item in enumerate(state.get("retrieved", []), start=1):
@@ -333,16 +358,13 @@ def synthesize_node(state: AgentState) -> dict[str, Any]:
         )
 
     if not context_blocks:
-        refusal = (
-            "I do not have sufficiently relevant evidence in the knowledge base to answer that "
-            "without guessing. Please rephrase, or ingest documents that cover this topic."
-        )
         return {
-            "answer": refusal,
+            "refusal": (
+                "I do not have sufficiently relevant evidence in the knowledge base to answer that "
+                "without guessing. Please rephrase, or ingest documents that cover this topic."
+            ),
             "sources": [],
-            "grounded": False,
-            "confidence": 0.0,
-            "messages": [],
+            "prompt": [],
         }
 
     context = "\n\n--\n\n".join(context_blocks)
@@ -367,8 +389,7 @@ def synthesize_node(state: AgentState) -> dict[str, Any]:
         ),
         HumanMessage(content=f"Question: {state['question']}"),
     ]
-    answer = str(llm.invoke(prompt).content)
-    return {"answer": answer, "sources": sources, "messages": prompt}
+    return {"prompt": prompt, "sources": sources, "refusal": None}
 
 
 def ground_check_node(state: AgentState) -> dict[str, Any]:
@@ -521,3 +542,87 @@ def run_agent(question: str, history: list[dict[str, str]] | None = None) -> dic
         "confidence": float(result.get("confidence") or 0.0),
         "memory_used": bool(result.get("memory_used")),
     }
+
+
+def iter_agent_events(question: str, history: list[dict[str, str]] | None = None):
+    """Yield SSE-friendly event dicts while running the agent pipeline.
+
+    Events: status, plan, tool, sources, token, final, error
+    """
+    from app.agent.llm import stream_chat
+
+    state: AgentState = {
+        "question": question,
+        "history": history or [],
+        "messages": [],
+        "plan": "",
+        "tool_trace": [],
+        "retrieved": [],
+        "answer": "",
+        "sources": [],
+        "grounded": False,
+        "confidence": 0.0,
+        "memory_used": False,
+        "resolved_question": question,
+    }
+
+    try:
+        yield {"event": "status", "data": {"step": "plan_step"}}
+        plan_out = plan_node(state)
+        state.update(plan_out)
+        yield {"event": "plan", "data": {"plan": state["plan"], "memory_used": state.get("memory_used", False)}}
+
+        yield {"event": "status", "data": {"step": "retrieve_and_tools"}}
+        retrieve_out = retrieve_and_tools_node(state)
+        state.update(retrieve_out)
+        for t in state.get("tool_trace") or []:
+            yield {"event": "tool", "data": t}
+
+        yield {"event": "status", "data": {"step": "synthesize"}}
+        built = _build_synthesize_prompt(state)
+        if built.get("refusal"):
+            state["answer"] = built["refusal"]
+            state["sources"] = []
+            state["grounded"] = False
+            state["confidence"] = 0.0
+            for piece in _chunk_text(state["answer"]):
+                yield {"event": "token", "data": {"text": piece}}
+        else:
+            state["sources"] = built["sources"]
+            yield {"event": "sources", "data": {"sources": state["sources"]}}
+            answer_parts: list[str] = []
+            for delta in stream_chat(built["prompt"]):
+                answer_parts.append(delta)
+                yield {"event": "token", "data": {"text": delta}}
+            state["answer"] = "".join(answer_parts)
+            state["messages"] = built["prompt"]
+
+        yield {"event": "status", "data": {"step": "ground_check"}}
+        prior = state.get("answer") or ""
+        ground_out = ground_check_node(state)
+        state.update(ground_out)
+        # If ground-check rewrote the answer, signal a replace so the UI can swap text.
+        if (state.get("answer") or "") != prior:
+            yield {"event": "replace", "data": {"answer": state["answer"]}}
+
+        yield {
+            "event": "final",
+            "data": {
+                "answer": state["answer"],
+                "plan": state.get("plan") or "",
+                "sources": state.get("sources") or [],
+                "tool_trace": state.get("tool_trace") or [],
+                "mode": llm_mode(),
+                "steps": ["plan_step", "retrieve_and_tools", "synthesize", "ground_check"],
+                "grounded": bool(state.get("grounded")),
+                "confidence": float(state.get("confidence") or 0.0),
+                "memory_used": bool(state.get("memory_used")),
+            },
+        }
+    except Exception as exc:  # noqa: BLE001
+        yield {"event": "error", "data": {"detail": str(exc)}}
+
+
+def _chunk_text(text: str, size: int = 24):
+    for i in range(0, len(text), size):
+        yield text[i : i + size]

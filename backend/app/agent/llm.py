@@ -5,11 +5,11 @@ from __future__ import annotations
 import logging
 import re
 import time
-from typing import Any, Sequence
+from typing import Any, Iterator, Sequence
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 
 from app.config import get_settings
 
@@ -29,6 +29,15 @@ class MockChatModel(BaseChatModel):
 
     async def _agenerate(self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any):
         return self._generate(messages, stop=stop, **kwargs)
+
+    def _stream(self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any):
+        text = self._respond(messages)
+        buf = ""
+        for i, ch in enumerate(text):
+            buf += ch
+            if ch.isspace() or i == len(text) - 1:
+                yield ChatGenerationChunk(message=AIMessageChunk(content=buf))
+                buf = ""
 
     def _respond(self, messages: list[BaseMessage]) -> str:
         system = ""
@@ -53,6 +62,16 @@ class MockChatModel(BaseChatModel):
         context = (context_match.group(1).strip() if context_match else "").strip()
         question = (question_match.group(1).strip() if question_match else human.strip()).strip()
 
+        if "rewrite the answer" in system.lower() and "draft:" in human.lower():
+            draft_m = re.search(r"Draft:\n(.*?)(?:\n\nContext:|\Z)", human, re.S | re.I)
+            draft = (draft_m.group(1).strip() if draft_m else "").strip()
+            if draft and "[" in draft:
+                return draft
+            return (
+                "Based on the retrieved passages, the answer is supported by the indexed evidence [1]. "
+                "Additional detail is available in related chunks [2]."
+            )
+
         if not context:
             return (
                 "I could not find supporting evidence in the knowledge base for that question. "
@@ -62,11 +81,11 @@ class MockChatModel(BaseChatModel):
         blocks = re.split(r"\n\n--\n\n", context)
         bullets = []
         cited_terms = []
-        for snip in blocks[:4]:
+        for idx, snip in enumerate(blocks[:4], start=1):
             clean = re.sub(r"\s+", " ", snip).strip()
             if not clean:
                 continue
-            bullets.append(f"- {clean[:300]}")
+            bullets.append(f"- {clean[:300]} [{idx}]")
             cited_terms.extend(re.findall(r"[A-Za-z][A-Za-z0-9_\-]{3,}", clean.lower()))
 
         key_phrases = []
@@ -79,11 +98,11 @@ class MockChatModel(BaseChatModel):
                 key_phrases.append(phrase)
 
         return (
-            f"Based on the retrieved knowledge base passages, here is a grounded answer to: {question}\n\n"
+            f"Based on the retrieved knowledge base passages, here is a grounded answer to: {question} [1]\n\n"
             + "\n".join(bullets)
             + "\n\nKey evidence themes: "
             + ", ".join(dict.fromkeys(key_phrases) or ["retrieved context"])
-            + ".\nThis synthesis stays within the retrieved evidence and cites the listed sources."
+            + " [1][2].\nThis synthesis stays within the retrieved evidence and cites the listed sources."
         )
 
 
@@ -139,6 +158,39 @@ class ResilientChatModel(BaseChatModel):
         assert last_error is not None
         raise last_error
 
+    def _stream(self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any):
+        last_error: BaseException | None = None
+        for model_idx, model in enumerate(self._models):
+            for attempt in range(self._max_retries):
+                try:
+                    yielded = False
+                    for chunk in model.stream(messages, stop=stop, **kwargs):
+                        yielded = True
+                        content = chunk.content if hasattr(chunk, "content") else str(chunk)
+                        yield ChatGenerationChunk(message=AIMessageChunk(content=str(content or "")))
+                    if yielded:
+                        return
+                    result = model._generate(messages, stop=stop, **kwargs)
+                    text = str(result.generations[0].message.content)
+                    yield ChatGenerationChunk(message=AIMessageChunk(content=text))
+                    return
+                except Exception as exc:  # noqa: BLE001
+                    last_error = exc
+                    if not _is_rate_limit_error(exc):
+                        raise
+                    delay = self._base_delay * (2 ** attempt)
+                    logger.warning(
+                        "LLM stream rate-limited on model %s (attempt %s/%s); sleeping %.1fs",
+                        getattr(model, "model_name", model_idx),
+                        attempt + 1,
+                        self._max_retries,
+                        delay,
+                    )
+                    time.sleep(delay)
+            logger.warning("Exhausted stream retries for model index %s; trying fallback", model_idx)
+        assert last_error is not None
+        raise last_error
+
     async def _agenerate(self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any):
         return self._generate(messages, stop=stop, **kwargs)
 
@@ -148,7 +200,6 @@ def _tamus_models() -> list[BaseChatModel]:
 
     settings = get_settings()
     model_ids = [settings.tamus_chat_model, *settings.tamus_fallback_models]
-    # de-dupe preserving order
     seen: set[str] = set()
     unique: list[str] = []
     for mid in model_ids:
@@ -161,8 +212,9 @@ def _tamus_models() -> list[BaseChatModel]:
             temperature=0.2,
             api_key=settings.tamus_ai_chat_api_key,
             base_url=settings.tamus_api_base,
-            max_retries=0,  # we handle retries ourselves
+            max_retries=0,
             request_timeout=60,
+            streaming=True,
         )
         for mid in unique
     ]
@@ -182,12 +234,22 @@ def get_chat_model() -> BaseChatModel:
                     temperature=0.2,
                     api_key=settings.openai_api_key,
                     max_retries=0,
+                    streaming=True,
                 )
             ],
             max_retries=3,
             base_delay=1.0,
         )
     return MockChatModel()
+
+
+def stream_chat(messages: list[BaseMessage]) -> Iterator[str]:
+    """Yield text deltas from the configured chat model."""
+    llm = get_chat_model()
+    for chunk in llm.stream(messages):
+        content = getattr(chunk, "content", None)
+        if content:
+            yield str(content)
 
 
 def llm_mode() -> str:

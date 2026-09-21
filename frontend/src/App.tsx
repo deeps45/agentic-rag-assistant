@@ -113,23 +113,118 @@ export default function App() {
     setQuestion("");
     setBusy(true);
     setError(null);
-    setTurns((prev) => [...prev, { role: "user", content: cleaned }]);
+    const history = turns.map((t) => ({ role: t.role, content: t.content }));
+    setTurns((prev) => [
+      ...prev,
+      { role: "user", content: cleaned },
+      {
+        role: "assistant",
+        content: "",
+        meta: {
+          answer: "",
+          plan: "",
+          sources: [],
+          tool_trace: [],
+          mode: status?.mode ?? "…",
+          steps: [],
+          grounded: true,
+          confidence: 0,
+          memory_used: false,
+        },
+      },
+    ]);
     try {
-      const history = turns.map((t) => ({ role: t.role, content: t.content }));
-      const res = await api.chat(cleaned, history);
-      setTurns((prev) => [...prev, { role: "assistant", content: res.answer, meta: res }]);
+      const res = await api.chatStream(cleaned, history, {
+        onStatus: (step) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant" && last.meta) {
+              last.meta = { ...last.meta, steps: [...(last.meta.steps || []), step] };
+            }
+            return next;
+          });
+        },
+        onPlan: (plan, memoryUsed) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant" && last.meta) {
+              last.meta = { ...last.meta, plan, memory_used: memoryUsed };
+            }
+            return next;
+          });
+        },
+        onTool: (tool) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant" && last.meta) {
+              last.meta = {
+                ...last.meta,
+                tool_trace: [...(last.meta.tool_trace || []), tool],
+              };
+            }
+            return next;
+          });
+        },
+        onSources: (sources) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant" && last.meta) {
+              last.meta = { ...last.meta, sources };
+            }
+            return next;
+          });
+        },
+        onToken: (text) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant") {
+              last.content = `${last.content}${text}`;
+            }
+            return next;
+          });
+        },
+        onReplace: (answer) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant") {
+              last.content = answer;
+            }
+            return next;
+          });
+        },
+        onFinal: (result) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant") {
+              last.content = result.answer;
+              last.meta = result;
+            }
+            return next;
+          });
+        },
+      });
+      void res;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Chat failed";
       setError(message);
-      setTurns((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: message.includes("rate-limited") || message.includes("429")
-            ? "The LLM provider is temporarily rate-limited. Please wait a few seconds and try again."
-            : `Could not synthesize an answer: ${message}`,
-        },
-      ]);
+      setTurns((prev) => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.role === "assistant") {
+          last.content =
+            message.includes("rate-limited") || message.includes("429")
+              ? "The LLM provider is temporarily rate-limited. Please wait a few seconds and try again."
+              : `Could not synthesize an answer: ${message}`;
+        }
+        return next;
+      });
     } finally {
       setBusy(false);
     }
@@ -364,6 +459,12 @@ export default function App() {
                       {typeof evalReport.hf_improvement_pct === "number"
                         ? ` · HF QA ${formatPct(evalReport.hf_improvement_pct)}`
                         : ""}
+                      {typeof evalReport.citation_score === "number"
+                        ? ` · cite ${(evalReport.citation_score * 100).toFixed(0)}%`
+                        : ""}
+                      {typeof evalReport.refusal_accuracy === "number"
+                        ? ` · refuse ${(evalReport.refusal_accuracy * 100).toFixed(0)}%`
+                        : ""}
                     </p>
                   )}
                 </div>
@@ -384,7 +485,7 @@ export default function App() {
                 <div>
                   <h2 className="display text-3xl">Conversational query</h2>
                   <p className="mt-1 text-sm text-[var(--muted)]">
-                    Multi-step plan → hybrid retrieval → tools → grounded synthesis with memory.
+                  Multi-step plan → hybrid retrieval → re-rank → streamed grounded synthesis.
                   </p>
                 </div>
                 {turns.length > 0 && (
@@ -483,7 +584,7 @@ export default function App() {
               ))}
               {busy && (
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-xs text-[var(--muted)]">
-                  <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> Agent planning & retrieving…
+                  <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> Streaming plan · retrieve · answer…
                 </div>
               )}
               <div ref={bottomRef} />

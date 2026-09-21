@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     top_k: int = 6
     # FAISS L2 distance cutoff; weaker matches are dropped before synthesis.
     max_retrieval_distance: float = 1.35
+    # Cross-encoder re-rank over hybrid candidates (FlashRank / fallback).
+    rerank_enabled: bool = True
+    rerank_candidates: int = 20
+    rerank_model: str = "ms-marco-TinyBERT-L-2-v2"
 
     @property
     def use_tamus(self) -> bool:

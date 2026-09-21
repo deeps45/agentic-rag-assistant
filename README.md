@@ -13,12 +13,14 @@ cd agentic-rag-assistant
 
 - **Document ingestion** — upload `.txt`, `.md`, `.pdf`, `.docx`, or paste text; chunked and embedded into FAISS
 - **Hybrid retrieval** — BM25 (lexical) + FAISS (dense) fused with reciprocal rank fusion to cut off-topic sources
+- **Cross-encoder re-rank** — FlashRank (TinyBERT) re-scores hybrid candidates before synthesis
 - **Agentic RAG** — LangGraph pipeline: plan → retrieve + tools → synthesize → ground-check
+- **Streaming chat** — SSE (`/api/chat/stream`) streams plan, tools, tokens, and final grounded answer
 - **Conversational memory** — follow-ups are resolved against prior turns so retrieval stays on-topic
 - **Anti-hallucination** — citation validation, lexical support check, cite-only source filtering, refuse when unsupported
 - **Tools** — hybrid semantic search, list documents, on-topic `define_term` (skips off-topic hits)
 - **Source-grounded chat** — answers with cited passages and full tool/plan/memory traces
-- **Evaluation pipeline** — baseline vs improved composite relevance score (hit-rate, overlap, semantic similarity)
+- **Evaluation pipeline** — baseline vs improved score including citation faithfulness + unanswerable refusal accuracy
 - **LLM modes** — TAMU Chat API (preferred), OpenAI fallback, or offline mock
 
 ## Quick start

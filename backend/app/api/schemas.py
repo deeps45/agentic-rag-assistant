@@ -75,3 +75,10 @@ class EvalSummary(BaseModel):
     hf_baseline_score: float | None = None
     hf_improved_score: float | None = None
     hf_improvement_pct: float | None = None
+    citation_score: float | None = None
+    citation_coverage: float | None = None
+    citation_validity: float | None = None
+    citation_support: float | None = None
+    refusal_accuracy: float | None = None
+    unanswerable_baseline_score: float | None = None
+    unanswerable_improved_score: float | None = None
