@@ -43,30 +43,36 @@ class LocalHashEmbeddings(Embeddings):
 class TamusEmbeddings(Embeddings):
     """TAMU Chat API embeddings — sends string inputs (API rejects token ids)."""
 
-    def __init__(self, api_key: str, base_url: str, model: str) -> None:
+    def __init__(self, api_key: str, base_url: str, model: str, batch_size: int = 32) -> None:
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model
+        self.batch_size = batch_size
 
     def _embed(self, texts: List[str]) -> List[List[float]]:
-        # API accepts a single string or list of strings; batch one-by-one for reliability.
         vectors: List[List[float]] = []
-        with httpx.Client(timeout=60.0) as client:
-            for text in texts:
+        with httpx.Client(timeout=120.0) as client:
+            for start in range(0, len(texts), self.batch_size):
+                batch = texts[start : start + self.batch_size]
+                payload_input: str | list[str] = batch[0] if len(batch) == 1 else batch
                 resp = client.post(
                     f"{self.base_url}/embeddings",
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
                     },
-                    json={"model": self.model, "input": text},
+                    json={"model": self.model, "input": payload_input},
                 )
                 resp.raise_for_status()
                 payload = resp.json()
                 data = payload.get("data") or []
-                if not data:
-                    raise RuntimeError(f"Empty embedding response: {payload}")
-                vectors.append(list(data[0]["embedding"]))
+                if len(data) != len(batch):
+                    raise RuntimeError(
+                        f"Expected {len(batch)} embeddings, got {len(data)}: {payload.get('error') or payload}"
+                    )
+                # OpenAI-style responses may be unordered; sort by index when present.
+                ordered = sorted(data, key=lambda row: row.get("index", 0))
+                vectors.extend(list(row["embedding"]) for row in ordered)
         return vectors
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:

@@ -1,0 +1,657 @@
+Title: Bayes' theorem
+Source: https://en.wikipedia.org/wiki/Bayes'_theorem
+License: Creative Commons Attribution-ShareAlike (Wikipedia)
+
+In probability theory, Bayes' theorem (alternatively Bayes' law or Bayes' rule), named after Thomas Bayes (), gives a mathematical rule for inverting conditional probabilities, allowing the probability of a cause to be found given its effect. For example, with Bayes' theorem, the probability that a patient has a disease given that they tested positive for that disease can be found using the probability that the test yields a positive result when the disease is present. The theorem was developed in the 18th century by Bayes and independently by Pierre-Simon Laplace.
+One of Bayes' theorem's many applications is Bayesian inference, an approach to statistical inference, where it is used to invert the probability of observations given a model configuration (i.e., the likelihood function) to obtain the probability of the model configuration given the observations (i.e., the posterior probability).
+
+
+History
+Bayes' theorem is named after Thomas Bayes, a minister, statistician, and philosopher. Bayes used conditional probability to provide an algorithm (his Proposition 9) that uses evidence to calculate limits on an unknown parameter. His work was published in 1763 as An Essay Towards Solving a Problem in the Doctrine of Chances. Bayes studied how to compute a distribution for the probability parameter of a binomial distribution (in modern terminology). After Bayes's death, his family gave his papers to a friend, the minister, philosopher, and mathematician Richard Price.
+Price significantly edited the unpublished manuscript for two years before sending it to a friend who read it aloud at the Royal Society on 23 December 1763. Price edited Bayes's major work "An Essay Towards Solving a Problem in the Doctrine of Chances" (1763), which appeared in Philosophical Transactions, and contains Bayes' theorem. Price wrote an introduction to the paper that provides some of the philosophical basis of Bayesian statistics and chose one of the two solutions Bayes offered. In 1765, Price was elected a Fellow of the Royal Society in recognition of his work on Bayes's legacy. On 27 April, a letter sent to his friend Benjamin Franklin was read out at the Royal Society, and later published, in which Price applies this work to population and computing 'life-annuities'.
+Independently of Bayes, Pierre-Simon Laplace used conditional probability to formulate the relation of an updated posterior probability from a prior probability, given evidence. He reproduced and extended Bayes's results in 1774, apparently unaware of Bayes's work, and summarized his results in Théorie analytique des probabilités (1812). The Bayesian interpretation of probability was developed mainly by Laplace.
+About 200 years later, Sir Harold Jeffreys put Bayes's algorithm and Laplace's formulation on an axiomatic basis, writing in a 1973 book that Bayes' theorem "is to the theory of probability what the Pythagorean theorem is to geometry".
+Stephen Stigler used a Bayesian argument to conclude that Bayes' theorem was discovered by Nicholas Saunderson, a blind English mathematician, some time before Bayes, but that is disputed. F. Thomas Bruss reviewed Bayes's "An essay towards solving a problem in the doctrine of chances" as communicated by Price. He agreed with Stigler's analysis on many points, but not on the question of priority. Bruss underlined the intuitive part of Bayes's formula and added independent arguments about Bayes's probable motivation for his work. He concluded that, unless the contrary is proven, the name "Bayes' Theorem" or "Bayes' formula" is justifiable.
+Martyn Hooper and Sharon McGrayne have argued that Price's contribution was substantial:
+
+By modern standards, we should refer to the Bayes–Price rule. Price discovered Bayes's work, recognized its importance, corrected it, contributed to the article, and found a use for it. The modern convention of employing Bayes's name alone is unfair but so entrenched that anything else makes little sense.
+The "Bayes factor" or "likelihood" that appears when writing Bayes' theorem in odds form appears in the early 1940s work of Alan Turing, who called it the "factor in favour of a proposition". In 1878, Charles Sanders Peirce used the logarithm of this factor as the "weight of evidence" for a proposition.
+
+
+Statement of theorem
+Bayes' theorem is stated mathematically as the following equation:
+
+where 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ and 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+ are events and 
+  
+    
+      
+        P
+        (
+        B
+        )
+        ≠
+        0
+      
+    
+    {\displaystyle P(B)\neq 0}
+  
+.
+
+  
+    
+      
+        P
+        (
+        A
+        |
+        B
+        )
+      
+    
+    {\displaystyle P(A\vert B)}
+  
+ is a conditional probability: the probability of event 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ occurring given that 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+ is true. It is also called the posterior probability of 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ given 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+.
+
+  
+    
+      
+        P
+        (
+        B
+        |
+        A
+        )
+      
+    
+    {\displaystyle P(B\vert A)}
+  
+ is also a conditional probability: the probability of event 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+ occurring given that 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ is true. It can also be interpreted as the likelihood function evaluated at 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ given a fixed 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+.
+
+  
+    
+      
+        P
+        (
+        A
+        )
+      
+    
+    {\displaystyle P(A)}
+  
+ and 
+  
+    
+      
+        P
+        (
+        B
+        )
+      
+    
+    {\displaystyle P(B)}
+  
+ are the probabilities of observing 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ and 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+ respectively without any given conditions. 
+  
+    
+      
+        P
+        (
+        A
+        )
+      
+    
+    {\displaystyle P(A)}
+  
+, the quantity of interest, is often called 'the prior probability' (prior to new evidence). Technically both 
+  
+    
+      
+        P
+        (
+        A
+        )
+      
+    
+    {\displaystyle P(A)}
+  
+ and 
+  
+    
+      
+        P
+        (
+        B
+        )
+      
+    
+    {\displaystyle P(B)}
+  
+ could be called prior, unconditioned, or marginal probabilities.
+
+Bayes' theorem may be derived from the relation between joint and conditional probabilities. The joint probability of the events 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ and 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+ both happening, written 
+  
+    
+      
+        P
+        (
+        A
+        ∩
+        B
+        )
+      
+    
+    {\displaystyle P(A\cap B)}
+  
+, is equal to the conditional probability of 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ given 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+ times the probability of 
+  
+    
+      
+        B
+      
+    
+    {\displaystyle B}
+  
+:
+  
+    
+      
+        P
+        (
+        A
+        ∩
+        B
+        )
+        =
+        P
+        (
+        A
+        |
+        B
+        )
+        P
+        (
+        B
+        )
+        .
+      
+    
+    {\displaystyle P(A\cap B)=P(A\vert B)P(B).}
+  
+Likewise,
+  
+    
+      
+        P
+        (
+        A
+        ∩
+        B
+        )
+        =
+        P
+        (
+        B
+        |
+        A
+        )
+        P
+        (
+        A
+        )
+        .
+      
+    
+    {\displaystyle P(A\cap B)=P(B\vert A)P(A).}
+  
+The two products must therefore be equal to each other:
+  
+    
+      
+        P
+        (
+        A
+        |
+        B
+        )
+        P
+        (
+        B
+        )
+        =
+        P
+        (
+        B
+        |
+        A
+        )
+        P
+        (
+        A
+        )
+        ,
+      
+    
+    {\displaystyle P(A\vert B)P(B)=P(B\vert A)P(A),}
+  
+and dividing both sides by 
+  
+    
+      
+        P
+        (
+        B
+        )
+      
+    
+    {\displaystyle P(B)}
+  
+ gives Bayes' theorem:
+  
+    
+      
+        P
+        (
+        A
+        |
+        B
+        )
+        =
+        
+          
+            
+              P
+              (
+              B
+              |
+              A
+              )
+              P
+              (
+              A
+              )
+            
+            
+              P
+              (
+              B
+              )
+            
+          
+        
+        ,
+        
+           if 
+        
+        P
+        (
+        B
+        )
+        ≠
+        0.
+      
+    
+    {\displaystyle P(A\vert B)={\frac {P(B\vert A)P(A)}{P(B)}},{\text{ if }}P(B)\neq 0.}
+  
+
+If events A1, A2, ..., are mutually exclusive and exhaustive, i.e., one of them is certain to occur but no two can occur together, then, by the law of total probability,
+  
+    
+      
+        P
+        (
+        B
+        )
+        =
+        
+          ∑
+          
+            i
+          
+        
+        P
+        (
+        B
+        
+          |
+        
+        
+          A
+          
+            i
+          
+        
+        )
+        P
+        (
+        
+          A
+          
+            i
+          
+        
+        )
+      
+    
+    {\displaystyle P(B)=\sum _{i}P(B|A_{i})P(A_{i})}
+  
+for any event B. Substituting this expression for 
+  
+    
+      
+        P
+        (
+        B
+        )
+      
+    
+    {\displaystyle P(B)}
+  
+ into the denominator of the earlier equation gives:
+  
+    
+      
+        P
+        (
+        
+          A
+          
+            i
+          
+        
+        
+          |
+        
+        B
+        )
+        =
+        
+          
+            
+              P
+              (
+              
+                A
+                
+                  i
+                
+              
+              )
+              P
+              (
+              B
+              
+                |
+              
+              
+                A
+                
+                  i
+                
+              
+              )
+            
+            
+              
+                ∑
+                
+                  j
+                
+              
+              P
+              (
+              
+                A
+                
+                  j
+                
+              
+              )
+              P
+              (
+              B
+              
+                |
+              
+              
+                A
+                
+                  j
+                
+              
+              )
+            
+          
+        
+        .
+      
+    
+    {\displaystyle P(A_{i}|B)={\frac {P(A_{i})P(B|A_{i})}{\sum _{j}P(A_{j})P(B|A_{j})}}.}
+  
+
+The events 
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+ and not-
+  
+    
+      
+        A
+      
+    
+    {\displaystyle A}
+  
+, written 
+  
+    
+      
+        ¬
+        A
+      
+    
+    {\displaystyle \neg A}
+  
+, are a mutually exclusive and exhaustive pair. Therefore the previous formula can be applied, and the sum in the denominator will have only two terms:
+
+  
+    
+      
+        P
+        (
+        A
+        
+          |
+        
+        B
+        )
+        =
+        
+          
+            
+              P
+              (
+              B
+              
+                |
+              
+              A
+              )
+              P
+              (
+              A
+              )
+            
+            
+              P
+              (
+              B
+              
+                |
+              
+              A
+              )
+              P
+              (
+              A
+              )
+              +
+              P
+              (
+              B
+              
+                |
+              
+              ¬
+              A
+     
+
+[Article truncated for corpus size.]

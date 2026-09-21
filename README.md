@@ -63,7 +63,17 @@ cp backend/.env.example backend/.env
 # edit TAMUS_AI_CHAT_API_KEY=...
 ```
 
-After changing embedding providers, delete `backend/data/` once so FAISS rebuilds with the new vector size.
+## Public knowledge base
+
+By default Groundline can load a **Wikipedia CC BY-SA corpus** (~30+ articles on AI, ML, CS, and science) from `backend/corpus/wikipedia/`.
+
+```bash
+cd backend
+python3 scripts/download_wikipedia_corpus.py   # fetch / refresh articles
+PYTHONPATH=. python3 scripts/ingest_corpus.py  # embed into FAISS (replaces current KB)
+```
+
+Restart the API after ingesting so it reloads the index.
 
 ## API surface
 

@@ -1,0 +1,224 @@
+{
+  "source": "Wikipedia",
+  "license": "CC BY-SA",
+  "count": 31,
+  "articles": [
+    {
+      "title": "Algorithm",
+      "filename": "wikipedia_Algorithm.txt",
+      "chars": 12165,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Algorithm.txt"
+    },
+    {
+      "title": "Artificial intelligence",
+      "filename": "wikipedia_Artificial_intelligence.txt",
+      "chars": 12193,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Artificial_intelligence.txt"
+    },
+    {
+      "title": "Astronomy",
+      "filename": "wikipedia_Astronomy.txt",
+      "chars": 12165,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Astronomy.txt"
+    },
+    {
+      "title": "Attention (machine learning)",
+      "filename": "wikipedia_Attention_machine_learning.txt",
+      "chars": 12203,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Attention_machine_learning.txt"
+    },
+    {
+      "title": "Bayes' theorem",
+      "filename": "wikipedia_Bayes_theorem.txt",
+      "chars": 12175,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Bayes_theorem.txt"
+    },
+    {
+      "title": "Biology",
+      "filename": "wikipedia_Biology.txt",
+      "chars": 11601,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Biology.txt"
+    },
+    {
+      "title": "Blockchain",
+      "filename": "wikipedia_Blockchain.txt",
+      "chars": 12167,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Blockchain.txt"
+    },
+    {
+      "title": "Cloud computing",
+      "filename": "wikipedia_Cloud_computing.txt",
+      "chars": 12177,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Cloud_computing.txt"
+    },
+    {
+      "title": "Cluster analysis",
+      "filename": "wikipedia_Cluster_analysis.txt",
+      "chars": 12179,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Cluster_analysis.txt"
+    },
+    {
+      "title": "Cognitive science",
+      "filename": "wikipedia_Cognitive_science.txt",
+      "chars": 12181,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Cognitive_science.txt"
+    },
+    {
+      "title": "Computer network",
+      "filename": "wikipedia_Computer_network.txt",
+      "chars": 12179,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Computer_network.txt"
+    },
+    {
+      "title": "Computer security",
+      "filename": "wikipedia_Computer_security.txt",
+      "chars": 12177,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Computer_security.txt"
+    },
+    {
+      "title": "Computer vision",
+      "filename": "wikipedia_Computer_vision.txt",
+      "chars": 12177,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Computer_vision.txt"
+    },
+    {
+      "title": "Cryptography",
+      "filename": "wikipedia_Cryptography.txt",
+      "chars": 12171,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Cryptography.txt"
+    },
+    {
+      "title": "Data science",
+      "filename": "wikipedia_Data_science.txt",
+      "chars": 7919,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Data_science.txt"
+    },
+    {
+      "title": "Deep learning",
+      "filename": "wikipedia_Deep_learning.txt",
+      "chars": 12173,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Deep_learning.txt"
+    },
+    {
+      "title": "DevOps",
+      "filename": "wikipedia_DevOps.txt",
+      "chars": 12159,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_DevOps.txt"
+    },
+    {
+      "title": "Distributed computing",
+      "filename": "wikipedia_Distributed_computing.txt",
+      "chars": 12189,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Distributed_computing.txt"
+    },
+    {
+      "title": "Foundation model",
+      "filename": "wikipedia_Foundation_model.txt",
+      "chars": 12179,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Foundation_model.txt"
+    },
+    {
+      "title": "Generative AI",
+      "filename": "wikipedia_Generative_AI.txt",
+      "chars": 12194,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Generative_AI.txt"
+    },
+    {
+      "title": "Information retrieval",
+      "filename": "wikipedia_Information_retrieval.txt",
+      "chars": 12189,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Information_retrieval.txt"
+    },
+    {
+      "title": "JavaScript",
+      "filename": "wikipedia_JavaScript.txt",
+      "chars": 12167,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_JavaScript.txt"
+    },
+    {
+      "title": "Large language model",
+      "filename": "wikipedia_Large_language_model.txt",
+      "chars": 12187,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Large_language_model.txt"
+    },
+    {
+      "title": "Machine learning",
+      "filename": "wikipedia_Machine_learning.txt",
+      "chars": 12179,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Machine_learning.txt"
+    },
+    {
+      "title": "Neural network (machine learning)",
+      "filename": "wikipedia_Neural_network_machine_learning.txt",
+      "chars": 12213,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Neural_network_machine_learning.txt"
+    },
+    {
+      "title": "Operating system",
+      "filename": "wikipedia_Operating_system.txt",
+      "chars": 12179,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Operating_system.txt"
+    },
+    {
+      "title": "Reinforcement learning",
+      "filename": "wikipedia_Reinforcement_learning.txt",
+      "chars": 12191,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Reinforcement_learning.txt"
+    },
+    {
+      "title": "Search engine",
+      "filename": "wikipedia_Search_engine.txt",
+      "chars": 12173,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Search_engine.txt"
+    },
+    {
+      "title": "Semantic search",
+      "filename": "wikipedia_Semantic_search.txt",
+      "chars": 2304,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Semantic_search.txt"
+    },
+    {
+      "title": "Supervised learning",
+      "filename": "wikipedia_Supervised_learning.txt",
+      "chars": 12185,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Supervised_learning.txt"
+    },
+    {
+      "title": "Transformer (deep learning)",
+      "filename": "wikipedia_Transformer_deep_learning.txt",
+      "chars": 12214,
+      "pageid": null,
+      "path": "/workspace/backend/corpus/wikipedia/wikipedia_Transformer_deep_learning.txt"
+    }
+  ]
+}

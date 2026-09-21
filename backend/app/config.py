@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     index_dir: Path = BASE_DIR / "data" / "faiss_index"
     eval_dir: Path = BASE_DIR / "data" / "evals"
     sample_docs_dir: Path = BASE_DIR / "sample_docs"
+    corpus_dir: Path = BASE_DIR / "corpus" / "wikipedia"
 
     chunk_size: int = 800
     chunk_overlap: int = 120

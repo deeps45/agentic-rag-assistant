@@ -1,0 +1,70 @@
+Title: Cloud computing
+Source: https://en.wikipedia.org/wiki/Cloud_computing
+License: Creative Commons Attribution-ShareAlike (Wikipedia)
+
+Cloud computing is defined by the International Organization for Standardization (ISO) as "a paradigm for enabling network access to a scalable and elastic pool of shareable physical or virtual resources with self-service provisioning and administration on demand". It is commonly referred to as "the cloud".
+
+
+Characteristics
+In 2011, the National Institute of Standards and Technology (NIST) identified five "essential characteristics" for cloud systems. Below are the exact definitions according to NIST:
+
+On-demand self-service: "A consumer can unilaterally provision computing capabilities, such as server time and network storage, as needed automatically without requiring human interaction with each service provider."
+Broad network access: "Capabilities are available over the network and accessed through standard mechanisms that promote use by heterogeneous thin or thick client platforms (e.g., mobile phones, tablets, laptops, and workstations)."
+Resource pooling: " The provider's computing resources are pooled to serve multiple consumers using a multi-tenant model, with different physical and virtual resources dynamically assigned and reassigned according to consumer demand."
+Rapid elasticity: "Capabilities can be elastically provisioned and released, in some cases automatically, to scale rapidly outward and inward commensurate with demand. To the consumer, the capabilities available for provisioning often appear unlimited and can be appropriated in any quantity at any time."
+Measured service: "Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth, and active user accounts). Resource usage can be monitored, controlled, and reported, providing transparency for both the provider and consumer of the utilized service.
+By 2023, the International Organization for Standardization (ISO) had expanded and refined the list.
+
+
+History
+
+The history of cloud computing extends to the 1960s, with the initial concepts of time-sharing becoming popularized via remote job entry (RJE). The "data center" model, where users submitted jobs to operators to run on mainframes, was predominantly used during this era. This period saw broad experimentation with making large-scale computing power more accessible through time-sharing, while optimizing infrastructure, platforms, and applications to improve efficiency for end users.
+The "cloud" metaphor for virtualized services dates to 1994, when it was used by General Magic for the universe of "places" that mobile agents in the Telescript environment could "go". The metaphor is credited to David Hoffman, a General Magic communications specialist, based on its long-standing use in networking and telecom. The expression cloud computing became more widely known in 1996 when Compaq Computer Corporation drew up a business plan for future computing and the Internet. The company's ambition was to supercharge sales with "cloud computing-enabled applications". The business plan foresaw that online consumer file storage would likely be commercially successful. As a result, Compaq decided to sell server hardware to internet service providers.
+In the 2000s, the application of cloud computing began to take shape with the establishment of Amazon Web Services (AWS) in 2002, which allowed developers to build applications independently. In 2006 Amazon Simple Storage Service, known as Amazon S3, and the Amazon Elastic Compute Cloud (EC2) were released.
+The following decade saw the launch of various cloud services. In 2010, Microsoft launched Microsoft Azure, and Rackspace Hosting and NASA initiated an open-source cloud-software project, OpenStack. IBM introduced the IBM SmartCloud framework in 2011, and Oracle announced the Oracle Cloud in 2012. In December 2019, Amazon launched AWS Outposts, a service that extends AWS infrastructure, services, APIs, and tools to customer data centers, co-location spaces, or on-premises facilities.
+
+
+Value proposition
+
+Cloud computing can shorten time to market by offering pre-configured tools, scalable resources, and managed services, allowing users to focus on core business value rather than maintaining infrastructure. Cloud platforms can enable organizations and individuals to reduce upfront capital expenditures on physical infrastructure by shifting to an operational expenditure model, where costs scale with usage. Cloud platforms also offer managed services and tools, such as artificial intelligence, data analytics, and machine learning, which might otherwise require significant in-house expertise and infrastructure investment.
+While cloud computing can offer cost advantages through effective resource optimization, organizations often face challenges such as unused resources, inefficient configurations, and hidden costs without proper oversight and governance. Many cloud platforms provide cost management tools, such as AWS Cost Explorer and Azure Cost Management, and frameworks like FinOps have emerged to standardize financial operations in the cloud. Cloud computing also facilitates collaboration, remote work, and global service delivery by enabling secure access to data and applications from any location with an internet connection.
+Cloud providers offer various redundancy options for core services, such as managed storage and managed databases, though redundancy configurations often vary by service tier. Advanced redundancy strategies, such as cross-region replication or failover systems, typically require explicit configuration and may incur additional costs or licensing fees.
+Cloud environments operate under a shared responsibility model, where providers are typically responsible for infrastructure security, physical hardware, and software updates, while customers are accountable for data encryption, identity and access management (IAM), and application-level security. These responsibilities vary depending on the cloud service model—Infrastructure as a Service (IaaS), Platform as a Service (PaaS), or Software as a Service (SaaS)—with customers typically having more control and responsibility in IaaS environments and progressively less in PaaS and SaaS models, often trading control for convenience and managed services.
+
+
+Adoption and suitability
+
+The decision to adopt cloud computing or maintain on-premises infrastructure depends on factors such as scalability, cost structure, latency requirements, regulatory constraints, and infrastructure customization.
+Organizations with variable or unpredictable workloads, limited capital for upfront investments, or a focus on rapid scalability benefit from cloud adoption. Startups, SaaS companies, and e-commerce platforms often prefer the pay-as-you-go operational expenditure (OpEx) model of cloud infrastructure. Additionally, companies prioritizing global accessibility, remote workforce enablement, disaster recovery, and leveraging advanced services such as AI/ML and analytics are well-suited for the cloud. In recent years, some cloud providers have started offering specialized services for high-performance computing and low-latency applications, addressing some use cases previously exclusive to on-premises setups.
+On the other hand, organizations with strict regulatory requirements, highly predictable workloads, or reliance on deeply integrated legacy systems may find cloud infrastructure less suitable. Businesses in industries like defense, government, or those handling highly sensitive data often favor on-premises setups for greater control and data sovereignty. Additionally, companies with ultra-low latency requirements, such as high-frequency trading (HFT) firms, rely on custom hardware (e.g., FPGAs) and physical proximity to exchanges, which most cloud providers cannot fully replicate despite recent advancements. Similarly, tech giants like Google, Meta, and Amazon build their own data centers due to economies of scale, predictable workloads, and the ability to customize hardware and network infrastructure for optimal efficiency. However, these companies also use cloud services selectively for certain workloads and applications where it aligns with their operational needs.
+In practice, many organizations are increasingly adopting hybrid cloud architectures, combining on-premises infrastructure with cloud services. This approach allows businesses to balance scalability, cost-effectiveness, and control, offering the benefits of both deployment models while mitigating their respective limitations.
+
+
+Challenges and limitations
+
+One of the primary challenges of cloud computing, compared with traditional on-premises systems, is maintaining data security and privacy. Cloud users entrust their sensitive data to third-party providers, who may not have adequate measures to protect it from unauthorized access, breaches, or leaks. Cloud users also face compliance risks if they have to adhere to certain regulations or standards regarding data protection, such as GDPR or HIPAA.
+Another challenge of cloud computing is reduced visibility and control. Cloud users may not have full insight into how their cloud resources are managed, configured, or optimized by their providers. They may also have limited ability to customize or modify their cloud services according to their specific needs or preferences. Complete understanding of all technology may be impossible, especially given the scale, complexity, and deliberate opacity of contemporary systems; however, there is a need for understanding complex technologies and their interconnections to have power and agency within them. The metaphor of the cloud can be seen as problematic as cloud computing retains the aura of something noumenal and numinous; it is something experienced without precisely understanding what it is or how it works.
+Additionally, cloud migration is a significant challenge. This process involves transferring data, applications, or workloads from one cloud environment to another, or from on-premises infrastructure to the cloud. Cloud migration can be complicated, time-consuming, and expensive, particularly when there are compatibility issues between different cloud platforms or architectures. If not carefully planned and executed, cloud migration can lead to downtime, reduced performance, or even data loss.
+
+
+Cloud migration challenges
+According to the 2024 State of the Cloud Report by Flexera, approximately 50% of respondents identified the following top challenges when migrating workloads to public clouds:
+
+"Understanding application dependencies"
+"Comparing on-premise and cloud costs"
+"Assessing technical feasibility."
+
+
+Implementation challenges
+Applications hosted in the cloud are susceptible to the fallacies of distributed computing, a series of misconceptions that can lead to significant issues in software development and deployment.
+
+
+Cloud cost overruns
+In a report by Gartner, a survey of 200 IT leaders revealed that 69% experienced budget overruns in their organizations' cloud expenditures during 2023. Conversely, 31% of IT leaders whose organizations stayed within budget attributed their success to accurate forecasting and budgeting, proactive monitoring of spending, and effective optimization.
+The 2024 Flexera State of Cloud Report identifies the top cloud challenges as managing cloud spend, followed by security concerns and lack of expertise. Public cloud expenditures exceeded budgeted amounts by an average of 15%. The report also reveals that cost savings is the top cloud initiative for 60% of respondents. Furthermore, 65% measure cloud progress through cost savings, while 42% prioritize shorter time-to-market, indicating that cloud's promise of accelerated deployment is often overshadowed by cost concerns.
+
+
+Service Level Agreements
+Typically, cloud providers' Service Level Agreements (SLAs) do not encompass all forms of service interruptions. Exclusions typically include plan
+
+[Article truncated for corpus size.]

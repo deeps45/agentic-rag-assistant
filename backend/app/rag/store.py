@@ -246,14 +246,22 @@ class KnowledgeStore:
     def seed_samples_if_empty(self) -> list[DocumentMeta]:
         if self.document_count() > 0:
             return []
-        sample_dir = self.settings.sample_docs_dir
-        added: list[DocumentMeta] = []
-        if not sample_dir.exists():
-            return added
-        for path in sorted(sample_dir.glob("*")):
-            if path.is_file() and path.suffix.lower() in {".txt", ".md", ".pdf", ".docx"}:
+        # Prefer the larger public Wikipedia corpus when available.
+        for corpus in (self.settings.corpus_dir, self.settings.sample_docs_dir):
+            if not corpus.exists():
+                continue
+            files = sorted(
+                p
+                for p in corpus.glob("*")
+                if p.is_file() and p.suffix.lower() in {".txt", ".md", ".pdf", ".docx"}
+            )
+            if not files:
+                continue
+            added: list[DocumentMeta] = []
+            for path in files:
                 added.append(self.ingest_file(path))
-        return added
+            return added
+        return []
 
 
 _store: KnowledgeStore | None = None

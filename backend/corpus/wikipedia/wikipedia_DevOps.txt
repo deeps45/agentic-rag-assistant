@@ -1,0 +1,95 @@
+Title: DevOps
+Source: https://en.wikipedia.org/wiki/DevOps
+License: Creative Commons Attribution-ShareAlike (Wikipedia)
+
+DevOps is the integration and automation of software development and information technology operations. DevOps encompasses the tasks necessary for software development and can lead to both shortening development time and improving the development life cycle. According to American software architect Neal Ford, DevOps, particularly through continuous delivery, employs the "bring the pain forward" principle by tackling challenging tasks early, fostering automation, and enabling swift issue detection.
+Although debated, DevOps is generally characterized by three key principles: shared ownership, workflow automation, and rapid feedback.
+From an academic perspective, Len Bass, Ingo Weber, and Liming Zhu—three computer science researchers from the CSIRO and the Software Engineering Institute—defined DevOps as "a set of practices intended to reduce the time between committing a change to a system and the change being placed into normal production, while ensuring high quality".
+However, the term is used in multiple contexts. At its most successful, DevOps is a combination of specific practices, culture change, and tools.
+
+
+History
+Proposals to combine software development methodologies with deployment and operations concepts first appeared in the late 80s and early 90s.
+In 2009, the first DevOps Days conference was held in Ghent, Belgium. The conference was founded by Belgian IT consultant and practitioner Patrick Debois. The conference has now spread to other countries.
+In 2012, the first "State of DevOps" report was published by Alanna Brown at Puppet Labs. 
+In 2016, the DORA metrics for throughput (deployment frequency, lead time for changes), and stability (mean time to recover, change failure rate) were published in that year's State of DevOps report. However, the research methodology and metrics were criticized by some experts. In response to these criticisms, the 2023 State of DevOps report published changes that updated the stability metric "mean time to recover" to "failed deployment recovery time" acknowledging the confusion the previous metric had caused.
+The 2024 report restructured the metrics framework by moving failed deployment recovery time from stability to throughput and introducing a new "rework rate" metric measuring the proportion of unplanned deployments made to fix user-visible issues. In 2025, DORA moved away from sorting teams into performance tiers and instead introduced seven team archetypes that combine delivery metrics with human factors like burnout, friction, and perceived value.
+
+
+Relevant metrics
+DevOps Research and Assessment (DORA) has developed a set of metrics which are intended to measure software development efficiency and reliability. These metrics include:
+
+Deployment Frequency: Time between code deployments.
+Mean Lead Time for Changes: Time between code commit and deployment.
+Change Failure Rate: Percentage of deployments causing production issues.
+Failed Deployment Recovery Time (formerly Mean Time to Recover)
+Reliability: Measures operational performance by focusing on availability and adherence to user expectations.
+
+
+Relationship to other approaches
+Many of the ideas fundamental to DevOps are similar to other well-known practices, such as Lean and Deming's Plan-Do-Check-Act cycle, The Toyota Way, and the Agile approach of breaking down components and batch sizes. Contrary to the "top-down" prescriptive approach and rigid framework of ITIL in the 1990s, DevOps is "bottom-up" and flexible, having been created by software engineers for their own needs.
+
+
+Agile
+
+The motivations for what has become modern DevOps and several standard DevOps practices such as automated build and test, continuous integration, and continuous delivery originated in the Agile world, which informally dates to the 1990s and formally to 2001. Agile development teams using methods such as extreme programming couldn't "satisfy the customer through early and continuous delivery of valuable software" unless they took responsibility for operations and infrastructure for their applications, automating much of that work. Because Scrum emerged as the dominant Agile framework in the early 2000s and it omitted the engineering practices that were part of many Agile teams, the momentum to automate operations and infrastructure functions splintered from Agile and expanded into what has become modern DevOps. Today, DevOps focuses on deploying methodology-agnostic, developed software.
+
+
+ArchOps
+ArchOps starts from software architecture artifacts instead of source code for operational deployment, as opposed to DevOps. ArchOps holds that architectural models are first-class entities in software development, deployment, and operations.
+
+
+Continuous Integration and Delivery (CI/CD)
+
+CI/CD is as critical to DevOps success as automation. Additionally, improved collaboration and communication between and within teams helps them achieve faster time to market with reduced risks.
+
+
+Database DevOps
+Database DevOps applies DevOps and CI/CD principles directly to database development and operations. Integrating schema changes, migrations, reference data, and other data-layer updates into the same version-controlled and automated pipelines used for application code enables more reliable deployments. This approach also enables improved coordination between application and data changes.
+Typical database DevOps practices include placing database schema definitions under version control, applying automated tests (such as unit tests or migration validation) to database changes, and deploying those changes through CI/CD pipelines. These practices reduce what is commonly referred to as "schema drift" between development and production systems and lower the risk of deployment failures.
+
+
+Mobile DevOps
+
+Mobile DevOps is a methodology that applies DevOps' principles to the development of mobile applications. Traditional DevOps focuses on streamlining the general software development process, but mobile development has unique challenges that require a tailored approach. Mobile DevOps is not simply a branch of DevOps specific to mobile app development, but rather an extension and reinterpretation of the DevOps philosophy tailored to mobile's specific requirements.
+
+
+Site Reliability Engineering
+
+In 2003, Google developed site reliability engineering (SRE), an approach for releasing new features continuously into large-scale, high-availability systems while maintaining a high-quality end-user experience. While SRE predates the development of DevOps, they are generally viewed as being related to each other. Some of the original authors of the discipline consider SRE as an implementation of DevOps.
+
+
+Toyota Production System, Lean Thinking, Kaizen
+
+The Toyota Production System (TPS), inspired lean thinking with its focus on continuous improvement, kaizen, flow, and small batches. The andon cord principle of creating fast feedback, swarming, and solving problems stems from TPS.
+
+
+DevSecOps, Shifting Security Left
+As its name implies, DevSecOps integrates DevOps within security practices. Contrary to a traditional centralized security team model, each delivery team is empowered to factor the correct security controls into their software delivery. Teams perform tests and implement security practices earlier in the development lifecycle, hence the term "shift left". Security is tested in three main areas: static, software composition, and dynamic.
+Checking software statically via static application security testing (SAST) is white-box testing with special focus on security. Depending on the programming language, different tools are needed to do such static code analysis. The software composition is analyzed, especially libraries, and the version of each component is checked against vulnerability lists published by CERT and other expert groups. When giving software to clients, library licenses and their match to the license of the software distributed are in focus, especially copyleft licenses.
+In dynamic testing, also called black-box testing, software is tested without knowing its inner functions. In DevSecOps this practice may be referred to as dynamic application security testing (DAST) or penetration testing. The goal is early detection of defects including cross-site scripting and SQL injection vulnerabilities.
+Often, detected defects from static and dynamic testing are triaged and categorized under taxonomies like the  Common Weakness Enumeration (CWE), maintained by the Mitre Corporation. This facilitates the prioritization of security bug fixes and also allows frequently recurring weaknesses to be fixed with recommended mitigations. As of 2025, CWE maintained its own list of frequently-occurring weaknesses, the CWE Top 25. In addition, organizations like Open Worldwide Application Security Project (OWASP) maintain lists of industry-wide frequently recurring software weaknesses.
+DevSecOps has also been described as a cultural shift involving a holistic approach to producing secure software by integrating security education, security by design, and security automation.
+
+
+Culture
+DevOps initiatives can change how a company's operations, developers, and testers collaborate during development and delivery processes.
+DevOps attempts to support consistency, reliability, and efficiency within an organization. This is usually enabled by a shared code repository or version control. Many organizations use version control to facilitate DevOps automation technologies like virtual machines, containerization (or OS-level virtualization), and CI/CD, with the Git version control system and the GitHub platform referenced as examples.
+
+
+GitOps
+GitOps evolved from DevOps. It takes its name from the popular version control system Git, and the specific state of deployment configuration is also version-controlled. Configuration changes can be managed using code review practices, and can be rolled back using version-controlling. Essentially, all of the changes to a code are tracked, bookmarked, and making any updates to the history can be made easier. As explained by Red Hat, "visibility to change means the ability to trace and reproduce issues quickly, improving overall security."
+
+
+DataOps
+DataOps is a set of practices, processes and technologies that combines an integrated and process-oriented perspective on data with automation and methods from agile software engineering to improve quality, speed, and collaboration and promote a culture of continuous improvement in the area of data analytics. While DataOps began as a set of best practices, it has now matured to become a new and independent approach to data analytics. DataOps applies to the entire data lifecycle from data preparation to reporting, and recognizes the interconnected nature of the data analytics team and information technology operations.
+DataOps incorporates the Agile methodology to shorten the cycle time of analytics development in alignment with business goals. 
+DevOps focuses on continuous delivery by leveraging on-demand IT resources and by automating test and deployment of software. This merging of software development and IT operations has improved velocity, quality, predictability and scale of software engineering and deployment. Borrowing methods from DevOps, DataOps seeks to bring these same improvements to data analytics.
+DataOps utilizes statistical process control (SPC) to monitor and control the data analytics pipeline. With SPC in place, the data flowing through an operational system is constantly monitored and verified. If an anomaly occurs, the data analytics team can be notified with an automated alert.
+DataOps is not tied to a particular technology, architecture, tool, language or framework. Collaboration, orchestration, quality, security, access and ease of use are important principles in DataOps workflows.
+
+
+History
+DataOps was first introduced by InformationWeek contributing editor Lenny Liebmann in a blog post on the IBM Big Data & Analy
+
+[Article truncated for corpus size.]
