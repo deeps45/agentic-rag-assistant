@@ -216,7 +216,7 @@ def _filter_retrieved(items: list[dict[str, Any]], question: str, limit: int = 4
         if score > max_d:
             continue
         # Drop far outliers relative to the best hit.
-        if kept and score > float(kept[0]["score"]) + 0.55:
+        if kept and score > float(kept[0]["score"]) + 0.75:
             continue
         kept.append(item)
         if len(kept) >= limit:

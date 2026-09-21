@@ -108,10 +108,10 @@ def rerank_documents(
     max_ce = max(ce_scores) if ce_scores else 0.0
     blended: list[tuple[Document, float, float]] = []
     for (doc, hybrid_dist), ce in zip(docs_with_scores, ce_scores):
-        # Normalize CE to [0,1]; convert to distance contribution.
+        # Normalize CE to [0,1]; boost good matches without wiping the shortlist.
         ce_norm = (ce / max_ce) if max_ce > 1e-9 else 0.0
-        # Keep hybrid as a soft prior so re-rank doesn't ignore dense evidence entirely.
-        distance = (1.0 - ce_norm) * 0.72 + float(hybrid_dist) * 0.28
+        # Soft blend: keep hybrid scale so domain filters still see a usable spread.
+        distance = float(hybrid_dist) * (1.0 - 0.55 * ce_norm)
         blended.append((doc, distance, ce_norm))
 
     blended.sort(key=lambda x: x[1])
