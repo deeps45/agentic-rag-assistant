@@ -43,36 +43,66 @@ class LocalHashEmbeddings(Embeddings):
 class TamusEmbeddings(Embeddings):
     """TAMU Chat API embeddings — sends string inputs (API rejects token ids)."""
 
-    def __init__(self, api_key: str, base_url: str, model: str, batch_size: int = 32) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str,
+        model: str,
+        batch_size: int = 32,
+        max_retries: int = 6,
+    ) -> None:
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.batch_size = batch_size
+        self.max_retries = max_retries
 
     def _embed(self, texts: List[str]) -> List[List[float]]:
+        import time
+
         vectors: List[List[float]] = []
         with httpx.Client(timeout=120.0) as client:
             for start in range(0, len(texts), self.batch_size):
                 batch = texts[start : start + self.batch_size]
                 payload_input: str | list[str] = batch[0] if len(batch) == 1 else batch
-                resp = client.post(
-                    f"{self.base_url}/embeddings",
-                    headers={
-                        "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={"model": self.model, "input": payload_input},
-                )
-                resp.raise_for_status()
-                payload = resp.json()
-                data = payload.get("data") or []
-                if len(data) != len(batch):
-                    raise RuntimeError(
-                        f"Expected {len(batch)} embeddings, got {len(data)}: {payload.get('error') or payload}"
-                    )
-                # OpenAI-style responses may be unordered; sort by index when present.
-                ordered = sorted(data, key=lambda row: row.get("index", 0))
-                vectors.extend(list(row["embedding"]) for row in ordered)
+                last_err: Exception | None = None
+                for attempt in range(self.max_retries):
+                    try:
+                        resp = client.post(
+                            f"{self.base_url}/embeddings",
+                            headers={
+                                "Authorization": f"Bearer {self.api_key}",
+                                "Content-Type": "application/json",
+                            },
+                            json={"model": self.model, "input": payload_input},
+                        )
+                        if resp.status_code in {429, 500, 502, 503, 504}:
+                            wait = min(60.0, (2**attempt) + 0.5)
+                            time.sleep(wait)
+                            last_err = httpx.HTTPStatusError(
+                                f"{resp.status_code} for embeddings",
+                                request=resp.request,
+                                response=resp,
+                            )
+                            continue
+                        resp.raise_for_status()
+                        payload = resp.json()
+                        data = payload.get("data") or []
+                        if len(data) != len(batch):
+                            raise RuntimeError(
+                                f"Expected {len(batch)} embeddings, got {len(data)}: "
+                                f"{payload.get('error') or payload}"
+                            )
+                        # OpenAI-style responses may be unordered; sort by index when present.
+                        ordered = sorted(data, key=lambda row: row.get("index", 0))
+                        vectors.extend(list(row["embedding"]) for row in ordered)
+                        last_err = None
+                        break
+                    except (httpx.TransportError, httpx.TimeoutException) as exc:
+                        last_err = exc
+                        time.sleep(min(60.0, (2**attempt) + 0.5))
+                if last_err is not None:
+                    raise last_err
         return vectors
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
