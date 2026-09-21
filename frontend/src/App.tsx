@@ -126,22 +126,21 @@ export default function App() {
           sources: [],
           tool_trace: [],
           mode: status?.mode ?? "…",
-          steps: [],
-          grounded: true,
-          confidence: 0,
-          memory_used: false,
+          steps: ["streaming"],
         },
       },
     ]);
     try {
-      const res = await api.chatStream(cleaned, history, {
+      await api.chatStream(cleaned, history, {
         onStatus: (step) => {
           setTurns((prev) => {
             const next = [...prev];
             const last = next[next.length - 1];
-            if (last?.role === "assistant" && last.meta) {
-              last.meta = { ...last.meta, steps: [...(last.meta.steps || []), step] };
-            }
+            if (last?.role !== "assistant" || !last.meta) return prev;
+            next[next.length - 1] = {
+              ...last,
+              meta: { ...last.meta, steps: [...(last.meta.steps || []), step] },
+            };
             return next;
           });
         },
@@ -149,9 +148,11 @@ export default function App() {
           setTurns((prev) => {
             const next = [...prev];
             const last = next[next.length - 1];
-            if (last?.role === "assistant" && last.meta) {
-              last.meta = { ...last.meta, plan, memory_used: memoryUsed };
-            }
+            if (last?.role !== "assistant" || !last.meta) return prev;
+            next[next.length - 1] = {
+              ...last,
+              meta: { ...last.meta, plan, memory_used: memoryUsed },
+            };
             return next;
           });
         },
@@ -159,12 +160,14 @@ export default function App() {
           setTurns((prev) => {
             const next = [...prev];
             const last = next[next.length - 1];
-            if (last?.role === "assistant" && last.meta) {
-              last.meta = {
+            if (last?.role !== "assistant" || !last.meta) return prev;
+            next[next.length - 1] = {
+              ...last,
+              meta: {
                 ...last.meta,
                 tool_trace: [...(last.meta.tool_trace || []), tool],
-              };
-            }
+              },
+            };
             return next;
           });
         },
@@ -172,9 +175,11 @@ export default function App() {
           setTurns((prev) => {
             const next = [...prev];
             const last = next[next.length - 1];
-            if (last?.role === "assistant" && last.meta) {
-              last.meta = { ...last.meta, sources };
-            }
+            if (last?.role !== "assistant" || !last.meta) return prev;
+            next[next.length - 1] = {
+              ...last,
+              meta: { ...last.meta, sources },
+            };
             return next;
           });
         },
@@ -182,9 +187,8 @@ export default function App() {
           setTurns((prev) => {
             const next = [...prev];
             const last = next[next.length - 1];
-            if (last?.role === "assistant") {
-              last.content = `${last.content}${text}`;
-            }
+            if (last?.role !== "assistant") return prev;
+            next[next.length - 1] = { ...last, content: `${last.content}${text}` };
             return next;
           });
         },
@@ -192,9 +196,8 @@ export default function App() {
           setTurns((prev) => {
             const next = [...prev];
             const last = next[next.length - 1];
-            if (last?.role === "assistant") {
-              last.content = answer;
-            }
+            if (last?.role !== "assistant") return prev;
+            next[next.length - 1] = { ...last, content: answer };
             return next;
           });
         },
@@ -202,27 +205,30 @@ export default function App() {
           setTurns((prev) => {
             const next = [...prev];
             const last = next[next.length - 1];
-            if (last?.role === "assistant") {
-              last.content = result.answer;
-              last.meta = result;
-            }
+            if (last?.role !== "assistant") return prev;
+            next[next.length - 1] = {
+              ...last,
+              content: result.answer,
+              meta: result,
+            };
             return next;
           });
         },
       });
-      void res;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Chat failed";
       setError(message);
       setTurns((prev) => {
         const next = [...prev];
         const last = next[next.length - 1];
-        if (last?.role === "assistant") {
-          last.content =
+        if (last?.role !== "assistant") return prev;
+        next[next.length - 1] = {
+          ...last,
+          content:
             message.includes("rate-limited") || message.includes("429")
               ? "The LLM provider is temporarily rate-limited. Please wait a few seconds and try again."
-              : `Could not synthesize an answer: ${message}`;
-        }
+              : `Could not synthesize an answer: ${message}`,
+        };
         return next;
       });
     } finally {
@@ -540,11 +546,18 @@ export default function App() {
                     <details className="mt-3 rounded-xl border border-[var(--line)] bg-[var(--warm)]/70 px-3 py-2">
                       <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
                         Plan · tools · sources
-                        {typeof turn.meta.confidence === "number" && (
+                        {typeof turn.meta.confidence === "number" &&
+                          turn.meta.steps?.includes("ground_check") && (
                           <span className="ml-2 normal-case tracking-normal text-[var(--accent)]">
                             · conf {(turn.meta.confidence * 100).toFixed(0)}%
                             {turn.meta.grounded === false ? " · ungrounded" : " · grounded"}
                             {turn.meta.memory_used ? " · memory" : ""}
+                          </span>
+                        )}
+                        {turn.meta.steps?.includes("streaming") &&
+                          !turn.meta.steps?.includes("ground_check") && (
+                          <span className="ml-2 normal-case tracking-normal text-[var(--accent)]">
+                            · streaming
                           </span>
                         )}
                       </summary>
