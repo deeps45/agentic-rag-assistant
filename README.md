@@ -65,15 +65,28 @@ cp backend/.env.example backend/.env
 
 ## Public knowledge base
 
-By default Groundline can load a **Wikipedia CC BY-SA corpus** (~30+ articles on AI, ML, CS, and science) from `backend/corpus/wikipedia/`.
+Groundline ships with scripts for large public corpora:
+
+1. **Wikipedia extracts** (CC BY-SA) — `backend/corpus/wikipedia/`
+2. **Hugging Face `rag-datasets/rag-mini-wikipedia`** — 3,200 passages
 
 ```bash
 cd backend
-python3 scripts/download_wikipedia_corpus.py   # fetch / refresh articles
-PYTHONPATH=. python3 scripts/ingest_corpus.py  # embed into FAISS (replaces current KB)
+# Wikipedia articles
+python3 scripts/download_wikipedia_corpus.py
+PYTHONPATH=. python3 scripts/ingest_corpus.py
+
+# Large HF corpus (adds breadth; use --replace to wipe first)
+PYTHONPATH=. python3 scripts/ingest_hf_rag_mini.py
 ```
 
-Restart the API after ingesting so it reloads the index.
+Restart the API after ingesting so it reloads the FAISS index.
+
+### Grounding & memory
+
+- Conversation history is sent with each chat turn (follow-ups resolve via memory).
+- Weak FAISS matches are dropped (`MAX_RETRIEVAL_DISTANCE`).
+- Answers must cite sources; a ground-check step rewrites or refuses if citations are missing.
 
 ## API surface
 

@@ -25,6 +25,9 @@ export type ChatResponse = {
   tool_trace: Array<{ tool: string; args: Record<string, unknown>; output: string }>;
   mode: string;
   steps: string[];
+  grounded?: boolean;
+  confidence?: number;
+  memory_used?: boolean;
 };
 
 export type Status = {
@@ -80,11 +83,11 @@ export const api = {
     }),
   deleteDocument: (id: string) =>
     request<{ deleted: boolean }>(`/api/documents/${id}`, { method: "DELETE" }),
-  chat: (question: string) =>
+  chat: (question: string, history: Array<{ role: string; content: string }> = []) =>
     request<ChatResponse>("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, history }),
     }),
   runEval: () => request<EvalSummary>("/api/eval/run", { method: "POST" }),
   latestEval: () => request<EvalSummary | null>("/api/eval/latest"),

@@ -115,7 +115,8 @@ export default function App() {
     setError(null);
     setTurns((prev) => [...prev, { role: "user", content: cleaned }]);
     try {
-      const res = await api.chat(cleaned);
+      const history = turns.map((t) => ({ role: t.role, content: t.content }));
+      const res = await api.chat(cleaned, history);
       setTurns((prev) => [...prev, { role: "assistant", content: res.answer, meta: res }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Chat failed");
@@ -404,6 +405,13 @@ export default function App() {
                     <details className="mt-3 rounded-xl border border-[var(--line)] bg-[var(--warm)]/70 px-3 py-2">
                       <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
                         Plan · tools · sources
+                        {typeof turn.meta.confidence === "number" && (
+                          <span className="ml-2 normal-case tracking-normal text-[var(--accent)]">
+                            · conf {(turn.meta.confidence * 100).toFixed(0)}%
+                            {turn.meta.grounded === false ? " · ungrounded" : " · grounded"}
+                            {turn.meta.memory_used ? " · memory" : ""}
+                          </span>
+                        )}
                       </summary>
                       <div className="mt-2 space-y-3 text-xs text-[var(--muted)]">
                         <div>

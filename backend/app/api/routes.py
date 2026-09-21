@@ -85,7 +85,12 @@ def delete_document(doc_id: str) -> dict[str, bool]:
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(body: ChatRequest) -> ChatResponse:
-    result = run_agent(body.question.strip())
+    history = [
+        {"role": (h.get("role") or "user"), "content": (h.get("content") or "")}
+        for h in (body.history or [])
+        if (h.get("content") or "").strip()
+    ]
+    result = run_agent(body.question.strip(), history=history)
     return ChatResponse(**result)
 
 

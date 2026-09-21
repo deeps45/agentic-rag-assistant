@@ -40,7 +40,9 @@ class Settings(BaseSettings):
 
     chunk_size: int = 800
     chunk_overlap: int = 120
-    top_k: int = 4
+    top_k: int = 6
+    # FAISS L2 distance cutoff; weaker matches are dropped before synthesis.
+    max_retrieval_distance: float = 1.35
 
     @property
     def use_tamus(self) -> bool:

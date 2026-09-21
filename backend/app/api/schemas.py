@@ -42,6 +42,9 @@ class ChatResponse(BaseModel):
     tool_trace: list[dict[str, Any]]
     mode: str
     steps: list[str]
+    grounded: bool = True
+    confidence: float = 0.0
+    memory_used: bool = False
 
 
 class StatusOut(BaseModel):
